@@ -23,7 +23,7 @@
 										(left-branch set)
 										(adjoin-set x (right-branch set))))))
 
-;left, rightを展開して評価
+;左先評価、appnedでO(n**2)
 (define (tree->list-1 tree)
 	(if (null? tree)
 		'()
@@ -32,7 +32,7 @@
 									(tree->list-1
 										(right-branch tree))))))
 
-;rightは展開せず置いておいて、leftを先に評価
+;右を先評価
 (define (tree->list-2 tree)
 	(define (copy-to-list tree result-list)
 		(if (null? tree)

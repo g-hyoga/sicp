@@ -79,28 +79,15 @@
 				((< (key (entry tree)) given-key) (lookup given-key (right-branch tree)))
 				(else #f)))
 
-(define r1 (make-record 10 "hoge"))
-(define r2 (make-record 13 "foo"))
-(define r3 (make-record 16 "hyo"))
-(define r4 (make-record 9 "glacier"))
-(define r5 (make-record 3 "fuga"))
-(define r6 (make-record 19 "hage"))
+(define r1 (make-record 10 'hoge))
+(define r2 (make-record 13 'foo))
+(define r3 (make-record 16 'hyo))
+(define r4 (make-record 9 'glacier))
+(define r5 (make-record 3 'fuga))
+(define r6 (make-record 19 'hage))
 
 (define tree (list->tree (list r1 r2 r3 r4 r5 r6)))
 (lookup 10 tree)
 (lookup 13 tree)
 (lookup 7 tree)
-
-
-
-
-
-
-
-
-
-
-
-
-
 

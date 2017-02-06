@@ -75,6 +75,26 @@
 				((eq? (symbol-leaf (right-branch tree)) char) (list 1))
 				(else (error "bad character" char))))
 
+(define (generate-huffman-tree pairs)
+	(successive-merge (make-leaf-set pairs)))
+
+#;(define (successive-merge leaves)
+	(if (= (length leaves) 1)
+		(car leaves)
+		(let ((s1 (symbol-leaf (car leaves)))
+					(s2 (symbol-leaf (cadr leaves)))
+					(w1 (weight-leaf (car leaves)))
+					(w2 (weight-leaf (cadr leaves))))
+			(successive-merge (adjoin-set (make-leaf (cons s1 s2) (+ w1 w2))
+																		(cddr leaves))))))
+
+(define (successive-merge leaves)
+	(if (= (length leaves) 1)
+		(car leaves)
+		(successive-merge (adjoin-set (make-code-tree (car leaves)
+																									(cadr leaves))
+																	(cddr leaves)))))
+
 (define sample-tree 
 	(make-code-tree (make-leaf 'A 4)
 									(make-code-tree
@@ -83,5 +103,10 @@
 																		(make-leaf 'C 1)))))
 (define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
 
-(encode '(A D A B B C A) sample-tree)
-(display sample-message)
+(define A (list 'A 5))
+(define B (list 'B 10))
+(define C (list 'C 7))
+
+(generate-huffman-tree (list A B C))
+
+

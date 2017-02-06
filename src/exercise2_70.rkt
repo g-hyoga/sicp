@@ -68,20 +68,53 @@
 		(append (encode-symbol (car message) tree)
 						(encode (cdr message) tree))))
 
-(define (encode-symbol char tree)
+#;(define (encode-symbol char tree)
 	(cond ((not (leaf? (left-branch tree))) (cons 0 (encode-symbol char (left-branch tree))))
 				((eq? (symbol-leaf (left-branch tree)) char) (list 0))
 				((not (leaf? (right-branch tree))) (cons 1 (encode-symbol char (right-branch tree))))
 				((eq? (symbol-leaf (right-branch tree)) char) (list 1))
 				(else (error "bad character" char))))
 
-(define sample-tree 
-	(make-code-tree (make-leaf 'A 4)
-									(make-code-tree
-										(make-leaf 'B 2)
-										(make-code-tree (make-leaf 'D 1)
-																		(make-leaf 'C 1)))))
-(define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
+(define (exist? a li)
+	(cond ((null? li) #f)
+				((eq? a (car li)) #t)
+				(else (exist? a (cdr li)))))
 
-(encode '(A D A B B C A) sample-tree)
-(display sample-message)
+(define (encode-symbol char tree)
+	(cond ((exist? char (symbols (left-branch tree)))
+				 (if (leaf? (left-branch tree))
+					 (list 0)
+					 (cons 0 (encode-symbol char (left-branch tree)))))
+				((exist? char (symbols (right-branch tree)))
+				 (if (leaf? (right-branch tree))
+					 (list 1)
+					 (cons 1 (encode-symbol char (right-branch tree)))))
+				(else (error "bad character" char))))
+
+(define (generate-huffman-tree pairs)
+	(successive-merge (make-leaf-set pairs)))
+
+#;(define (successive-merge leaves)
+	(if (= (length leaves) 1)
+		(car leaves)
+		(let ((s1 (symbol-leaf (car leaves)))
+					(s2 (symbol-leaf (cadr leaves)))
+					(w1 (weight-leaf (car leaves)))
+					(w2 (weight-leaf (cadr leaves))))
+			(successive-merge (adjoin-set (make-leaf (cons s1 s2) (+ w1 w2))
+																		(cddr leaves))))))
+
+(define (successive-merge leaves)
+	(if (= (length leaves) 1)
+		(car leaves)
+		(successive-merge (adjoin-set (make-code-tree (car leaves)
+																									(cadr leaves))
+																	(cddr leaves)))))
+
+
+(define tree (generate-huffman-tree '((A 2) (GET 2) (SHA 3) (WAH 1) (BOOM 1) (JOB 2) (NA 16) (YIP 9))))
+(define message '(GET A JOB SHA NA NA NA NA NA NA NA GET A JOB SHA NA NA NA NA NA NA NA WAH YIP YIP YIP YIP YIP YIP YIP YIP YIP SHA BOOM))
+(encode message tree)
+
+(length (encode message tree))
+(* 3 (+ 2 3 3 1 1 2 16 9))

@@ -56,6 +56,29 @@
 															 right-tree)
 										remaining-elts))))))))
 
+(define (union set1 set2)
+	(cond ((null? set1) set2)
+				((null? set2) set1)
+				(else (let ((x1 (car set1)) (x2 (car set2)))
+								(cond 
+									((= x1 x2) (cons x1 (union (cdr set1) (cdr set2))))
+									((< x1 x2) (cons x1 (union (cdr set1) set2)))
+									((> x1 x2) (cons x2 (union set1 (cdr set2)))))))))
+
+(define (intersection set1 set2)
+	(if (or (null? set1) (null? set2))
+		'()
+		(let ((x1 (car set1)) (x2 (car set2)))
+			(cond ((= x1 x2) (cons x1 (intersection (cdr set1) (cdr set2))))
+						((< x1 x2) (intersection (cdr set1) set2))
+						((> x1 x2) (intersection set1 (cdr set2)))))))
+
+(define (union-set set1 set2)
+	(list->tree (union (tree->list set1) (tree->list set2))))
+(define (intersection-set set1 set2)
+	(list->tree (intersection (tree->list set1) (tree->list set2))))
+
+
 (define tree1 
 	(make-tree 10
 						 (make-tree 5
@@ -69,6 +92,10 @@
 																	 '()
 																	 '()))))
 
-(list->tree (list 1 3 5 7 9 11))
+(define tree2 (make-tree 7 
+												 (make-tree 3 (make-tree 1 '() '()) (make-tree 5 '() '())) 
+												 (make-tree 9 '() (make-tree 11 '() '()))))
 
-(adjoin-set 12 tree1)
+
+(union-set tree1 tree2)
+(intersection-set tree1 tree2)
