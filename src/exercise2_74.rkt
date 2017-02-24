@@ -43,7 +43,7 @@
 					(else (get-helper k (cdr array)))))
 	(get-helper (list op type) global-array))
 
-; (list ('osaka name1 adress1 salary1) ('osaka name2 adress2 salary2) ...)
+; (list '(name1 adress1 salary1) '(name2 adress2 salary2) ...)
 (define (install-osaka-package)
 	(define (tag record) (attach-tag 'osaka record))
 	(define (make-record name adress salary)
