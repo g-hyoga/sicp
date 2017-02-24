@@ -12,6 +12,7 @@
 		(cdr dataum)
 		(error "Bad tagged dataum: CONTENTS" dataum)))
 
+;tag付きが前提
 (define (apply-generic op . args)
 	(let ((type-tags (map type-tag args)))
 		(let ((proc (get op type-tags)))
@@ -67,7 +68,8 @@
 			 (lambda (record) (get-salary record)))
 	(put 'insert-record '(osaka)
 			 (lambda (record file) (save-record record file)))
-	(put 'get-record '(osaka osaka)
+	;apply-genericでデータがタグ付き前提なので'(osaka osaka)	
+	(put 'get-record '(() osaka)
 			 (lambda (name file) (tag (get-record name file))))
 	'done)
 
@@ -93,7 +95,7 @@
 (define (get-name record) (apply-generic 'get-name record))
 (define (get-salary record) (apply-generic 'get-salary record))
 (define (get-record name file)
-	(apply-generic 'get-record (attach-tag 'osaka name) (attach-tag 'osaka file)))
+	(apply-generic 'get-record (attach-tag '() name) (attach-tag 'osaka file)))
 
 ;(define file2 (save-record (make-record 'person 'koko 100) file))
 
