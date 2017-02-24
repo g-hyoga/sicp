@@ -173,3 +173,12 @@
 (find-employee-record 'you files)
 
 
+;;;out;;;
+; 'done
+; 'done
+; 'done
+; '(kyoto suzuki 79 **)
+; '(osaka hyoga ibaraki 10000000)
+; '(shiga (name tomoyat1) (salary 0))
+; #f
+
