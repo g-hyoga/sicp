@@ -124,7 +124,7 @@
 		(cadr local-record))  
 	(define (get-record name file)
 		(cond ((null? file) #f)
-					((eq? name (get-name (car file))) (cons 'kyoto (list (car file))))
+					((eq? name (get-name (car file))) (cons 'kyoto (car file)))
 					(else (get-record name (cdr file)))))
 	(define (insert-record record file)
 		(cons record file))
@@ -141,6 +141,7 @@
 									 '(kaneda 100 ***))))
 	'done)
 
+;;;body;;;
 (define (get-name tagged-record)
 	(apply-generic 'get-name tagged-record))
 
@@ -154,10 +155,6 @@
 (install-shiga-package)
 (install-kyoto-package)
 
-(define osaka-data (get 'test-data 'osaka))
-(define kyoto-data (get 'test-data 'kyoto))
-(define shiga-data (get 'test-data 'shiga))
-
 (define (find-employee-record name files)
 	(if (null? files)
 		#f
@@ -166,7 +163,9 @@
 				(get-record name file)
 				(find-employee-record name (cdr files))))))
 
-
+(define osaka-data (get 'test-data 'osaka))
+(define kyoto-data (get 'test-data 'kyoto))
+(define shiga-data (get 'test-data 'shiga))
 (define files (list osaka-data shiga-data kyoto-data))
 (find-employee-record 'suzuki files)
 (find-employee-record 'hyoga files)
