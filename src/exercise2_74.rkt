@@ -76,7 +76,11 @@
 					(else (find-employee-record name (car file))))))
 
 (install-osaka-package)
-(define file (list '(osaka name1 adress1 salary1) '(osaka name2 adress2 salary2)))
+(define file (list '(osaka name1 adress1 salary1) 
+									 '(osaka name2 adress2 salary2)
+									 '(osaka hyoga shima 10000000)
+									 '(osaka hoge koko 1)
+									 '(osaka foo soko 10)))
 
 (define make-record (get 'make-record '(osaka)))
 (define save-record (get 'save-record '(osaka)))
@@ -87,9 +91,9 @@
 	(cond ((null? files) #f)
 				((eq? name (get-name (car files))) (car files))
 				(else (get-record name (cdr files)))))
-(define file2 (save-record (make-record 'person 'koko 100) file))
+;(define file2 (save-record (make-record 'person 'koko 100) file))
 
-(get-record 'person file2)
-(get-salary (get-record 'person file2))
+(get-record 'hyoga file)
+(get-salary (get-record 'hyoga file))
 
 
