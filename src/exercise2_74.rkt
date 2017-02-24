@@ -71,6 +71,12 @@
 	;apply-genericでデータがタグ付き前提なので'(osaka osaka)	
 	(put 'get-record '(() osaka)
 			 (lambda (name file) (tag (get-record name file))))
+	(put 'test-data '(osaka)
+			 (tag (list '(name1 adress1 salary1) 
+									 '(name2 adress2 salary2)
+									 '(hyoga ibaraki 10000000)
+									 '(hoge koko 1)
+									 '(foo soko 10))))
 	'done)
 
 (define (find-employee-record name files)
@@ -86,7 +92,7 @@
 (install-osaka-package)
 (define file (list '(name1 adress1 salary1) 
 									 '(name2 adress2 salary2)
-									 '(hyoga shima 10000000)
+									 '(hyoga ibaraki 10000000)
 									 '(hoge koko 1)
 									 '(foo soko 10)))
 
@@ -101,5 +107,4 @@
 
 (get-record 'hyoga file)
 (get-salary (get-record 'hyoga file))
-
 
