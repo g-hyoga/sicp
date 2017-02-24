@@ -42,30 +42,26 @@
 					(else (get-helper k (cdr array)))))
 	(get-helper (list op type) global-array))
 
-; (list ('osaka name1 address1 salary1) ('osaka name2 adress2 salary2) ...)
+; (list ('osaka name1 adress1 salary1) ('osaka name2 adress2 salary2) ...)
 (define (install-osaka-package)
-	(define (tag record) (cons 'osaka record))
-	(define (make-record name address salary)
-		(tag (list name address salary)))
+	(define (tag record) (attach-tag 'osaka record))
+	(define (make-record name adress salary)
+		(tag (list name adress salary)))
 	(define (get-name record)
+		(car record))
+	(define (get-adress record)
 		(cadr record))
-	(define (get-address record)
-		(caddr record))
 	(define (get-salary record)
-		(cadddr record))
-	(define (get-record name file)
-		(cond ((null? file) #f)
-					((eq? name (get-name (car file))) (car file))
-					(else (get-record name (cdr file)))))
+		(caddr record))
 	(define (save-record record file) (cons record file))
 
-	(put 'make-record 'osaka
-			 (lambda (name address salary) (make-record name adress salary)))
-	(put 'get-record 'osaka 
-			 (lambda (name file) (get-record name file)))
-	(put 'get-salary 'osaka
+	(put 'get-name '(osaka)
+			 (lambda (record) (get-name record)))
+	(put 'make-record '(osaka)
+			 (lambda (name adress salary) (make-record name adress salary)))
+	(put 'get-salary '(osaka)
 			 (lambda (record) (get-salary record)))
-	(put 'save-record 'osaka
+	(put 'save-record '(osaka)
 			 (lambda (record file) (save-record record file)))
 	'done)
 
@@ -80,12 +76,17 @@
 					(else (find-employee-record name (car file))))))
 
 (install-osaka-package)
-(define file (list '(osaka name1 address1 salary1) '(osaka name2 adress2 salary2)))
-(define make-record (get 'make-record 'osaka))
-(define save-record (get 'save-record 'osaka))
-;(define get-record (get 'get-record 'osaka))
-(define (get-record name file) (apply-generic 'get-record name file))
-(define get-salary (get 'get-salary 'osaka))
+(define file (list '(osaka name1 adress1 salary1) '(osaka name2 adress2 salary2)))
+
+(define make-record (get 'make-record '(osaka)))
+(define save-record (get 'save-record '(osaka)))
+(define (get-name record) (apply-generic 'get-name record))
+(define (get-salary record) (apply-generic 'get-salary record))
+
+(define (get-record name files)
+	(cond ((null? files) #f)
+				((eq? name (get-name (car files))) (car files))
+				(else (get-record name (cdr files)))))
 (define file2 (save-record (make-record 'person 'koko 100) file))
 
 (get-record 'person file2)
