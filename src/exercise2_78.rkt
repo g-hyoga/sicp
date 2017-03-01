@@ -1,7 +1,5 @@
 #lang racket
 
-;何したら良いかわからん
-
 ;;;get put;;;
 (define global-array '())
 
@@ -27,13 +25,13 @@
 (define (attach-tag type-tag contents)
 	(cons type-tag contents))
 (define (type-tag datum)
-	(if (pair? datum)
-		(car datum)
-		(error "Bad tagged datum: TYPE-TAG" datum)))
-(define (contents dataum)
-	(if (pair? dataum)
-		(cdr dataum)
-		(error "Bad tagged dataum: CONTENTS" dataum)))
+	(cond ((pair? datum) (car datum))
+				((number? datum) 'scheme-number)
+				(else (error "Bad tagged datum: TYPE-TAG" datum))))
+(define (contents datum)
+	(cond ((pair? datum) (cdr datum))
+				((number? datum) datum)
+				(else (error "Bad tagged datum: CONTENTS" datum))))
 
 ;;;generic;;;
 (define (apply-generic op . args)
@@ -206,7 +204,14 @@
 (define (mul x y) (apply-generic 'mul x y))
 (define (div x y) (apply-generic 'div x y))
 
+(define a (make-scheme-number 2))
+(define b (make-scheme-number 1))
 
+(type-tag a)
+(contents a)
+
+(add a b)
+(add 1 2)
 
 
 
