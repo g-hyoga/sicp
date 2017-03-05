@@ -7,36 +7,20 @@
 (define (key entry) (car entry))
 (define (value entry) (cadr entry))
 
-(define (put-table table key1 key2 item)
-	(if (not (hash-has-key? table key1))
-		(hash-set! table key1 (make-hash))
-		true)
-	(hash-set! (hash-ref table key1) key2 item))
-
-(define (get-table table key1 key2)
-	(define (not-found . msg)
-		;  (display msg (current-error-port))
-		;  (display "\n")
-		false)
-	(if (hash-has-key? table key1)
-		(if (hash-has-key? (hash-ref table key1) key2)
-			(hash-ref (hash-ref table key1) key2)
-			(not-found "Bad key -- KEY2" key2))
-		(not-found "Bad key -- KEY1" key1)))
-
-;; 演算テーブル
-(define *op-table* (make-hash))
 (define (put op type item)
-	(put-table *op-table* op type item))
-(define (get op type)
-	(get-table *op-table* op type))
+	(define (put-helper k array)
+		(cond ((null? array) (list(make-entry k item)))
+					((equal? (key (car array)) k) array)
+					(else (cons (car array) (put-helper k (cdr array))))))
+	(set! global-array (put-helper (list op type) global-array)))
 
-;; 型変換テーブル
-(define *coercion-table* (make-hash))
-(define (put-coercion type1 type2 item)
-	(put-table *coercion-table* type1 type2 item))
-(define (get-coercion type1 type2)
-	(get-table *coercion-table* type1 type2))
+(define (get op type)
+	(define (get-helper k array)
+		(cond ((null? array) #f)
+					((equal? (key (car array)) k) (value (car array)))
+					(else (get-helper k (cdr array)))))
+	(get-helper (list op type) global-array))
+
 ;;;tag;;;
 (define (attach-tag type-tag contents)
 	(cons type-tag contents))
@@ -69,6 +53,7 @@
 	(put 'div '(scheme-number scheme-number)
 			 (lambda (x y) (tag (/ x y))))
 	(put 'make 'scheme-number (lambda (x) (tag x)))
+	(put '=zero? '(scheme-number) (lambda (x) (= x 0)))
 	'done)
 	
 (define (install-rational-package)
@@ -91,6 +76,8 @@
 	(define (div-rat x y)
 		(make-rat (* (number x) (denom y))
 							(* (denom x) (number y))))
+	(define (=zero? x)
+		(= (number x) 0))
 
 	(define (tag x) (attach-tag 'rational x))
 	(put 'number '(rational) number)
@@ -105,6 +92,8 @@
 			 (lambda (x y) (tag (div-rat x y))))
 	(put 'make 'rational
 			 (lambda (n d) (tag (make-rat n d))))
+	(put '=zero? '(rational)
+			 (lambda (x) (=zero? x)))
 	'done)
 
 (define (install-rectangular-package)
@@ -120,6 +109,9 @@
 		(atan (imag-part z) (real-part z)))
 	(define (make-from-mag-ang r a)
 		(cons (* r (cos a)) (* r (sin a))))
+	(define (=zero? z)
+		(and (= (real-part z) 0)
+				 (= (imag-part z) 0)))
 
 	; interface to the rest of the system
 	(define (tag x) (attach-tag 'rectangular x))
@@ -131,6 +123,7 @@
 			 (lambda (x y) (tag (make-from-real-imag x y))))
 	(put 'make-from-mag-ang 'rectangular
 			 (lambda (r a) (tag (make-from-mag-ang r a))))
+	(put '=zero? '(rectagular) (lambda (z) (=zero? z)))
 	'done)
 
 (define (install-polar-package)
@@ -146,6 +139,9 @@
 	(define (make-from-real-imag x y)
 		(cons (sqrt (+ (square x) (square y)))
 					(atan y x)))
+	(define (=zero? z)
+		(= 0 (magnitude z)))
+
 	;; interface to the rest of the system
 	(define (tag x) (attach-tag 'polar x))
 	(put 'real-part '(polar) real-part)
@@ -156,6 +152,7 @@
 			 (lambda (x y) (tag (make-from-real-imag x y))))
 	(put 'make-from-mag-ang 'polar
 			 (lambda (r a) (tag (make-from-mag-ang r a))))
+	(put '=zero? '(polar) (lambda (z) (=zero? z)))
 	'done)
 
 (define (install-complex-package)
@@ -167,6 +164,7 @@
 	(define (imag-part z) (apply-generic 'imag-part z))
 	(define (magnitude z) (apply-generic 'magnitude z))
 	(define (angle z) (apply-generic 'angle z))
+	(define (=zero? z) (apply-generic '=zero? z))
 
 	(define (add-complex z1 z2)
 		(make-from-real-imag (+ (real-part z1) (real-part z2))
@@ -198,6 +196,7 @@
 	(put 'imag-part '(complex) imag-part)
 	(put 'magnitude '(complex) magnitude)
 	(put 'angle '(complex) angle)
+	(put '=zero? '(complex) =zero?)
 	'done)
 
 
@@ -225,6 +224,7 @@
 (define (denom r) (apply-generic 'denom r))
 (define (real-part z) (apply-generic 'real-part z))
 (define (imag-part z) (apply-generic 'imag-part z))
+(define (=zero? x) (apply-generic '=zero? x))
 
 (define (equ? a b)
 	(let ((a-tag (type-tag a))
@@ -237,14 +237,6 @@
 					((and (eq? b-tag 'scheme-number) (eq? a-tag 'rational))
 					 (and (= (contents b) (number a)) (= 1 (denom a))))
 					(else #f))))
-
-(define (=zero? x)
-	(let ((content (contents x))
-				(tag (type-tag x)))
-		(cond ((eq? tag 'scheme-number) (= 0 content))
-					((eq? tag 'rational) (= 0 (number x)))
-					((eq? tag 'complex) (and (= 0 (real-part x))
-																	 (= 0 (imag-part x)))))))
 
 (define zero1 (make-scheme-number 0))
 (define zero2 (make-rational 0 1))

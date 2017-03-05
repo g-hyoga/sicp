@@ -213,5 +213,16 @@
 (add a b)
 (add 1 2)
 
+; scheme-number packageを消すという話だったが、違うと思う.
+; 変更して良いのはtype-tag, contents, attach-tagのみなので、
+; この時点でscheme-number-pacakageを消すと
+; scheme-number-packageのadd, subなどをインストールできない.
+; よって適切なadd, subなどの手続きが呼べない
+; 自分で+, -などの手続きをput して良いなら別だが
+
+
+
+
+
 
 

@@ -210,6 +210,9 @@
 (define (real-part z) (apply-generic 'real-part z))
 (define (imag-part z) (apply-generic 'imag-part z))
 
+; 複数の型に対して等価性を判定する必要があるが、
+; 複数の型を扱う方法を習ってないので、
+; ここでは、if分の暴力を振るうしかない気がする
 (define (equ? a b)
 	(let ((a-tag (type-tag a))
 				(b-tag (type-tag b)))

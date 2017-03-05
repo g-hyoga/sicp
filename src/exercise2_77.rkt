@@ -141,6 +141,8 @@
 	'done)
 
 (define (install-complex-package)
+	(install-polar-package)
+	(install-rectangular-package)
 	(define (make-from-real-imag x y)
 		((get 'make-from-real-imag 'rectangular) x y))	
 	(define (make-from-mag-ang r a)
@@ -186,8 +188,6 @@
 ;;;body;;;
 (install-scheme-number-package)
 (install-rational-package)
-(install-polar-package)
-(install-rectangular-package)
 (install-complex-package)
 
 (define (make-scheme-number n)
