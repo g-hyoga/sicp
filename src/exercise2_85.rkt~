@@ -98,6 +98,20 @@
 
 (define (install-real-package)
 	(define (tag x) (attach-tag 'real x))
+	(define (decimal-place x)
+		(define (iter x result)
+			(if (= (quotient x 10) 0)
+				result
+				(iter (quotient x 10) (+ result 1))))
+		(iter x 0))
+	(define (project x)
+		((get 'make 'rational) x
+													 (expt 10 (decimal-place x))))
+	(define (drop x)
+		(if (= (tag x) (raise (project x)))
+			(project x)
+			#f))
+
 	(put 'add '(real real)
 			 (lambda (x y) (tag (+ x y))))
 	(put 'sub '(real real)
@@ -110,6 +124,8 @@
 	(put '=zero? '(real) (lambda (x) (= x 0)))
 	(put 'raise '(real)
 			 (lambda (x) ((get 'make-from-real-imag 'complex) x 0)))
+	(put 'project '(real) project)
+	(put 'drop '(real) drop)
 	'done)
 
 (define (install-rational-package)
@@ -137,6 +153,12 @@
 	(define (raise x)
 		((get 'make 'real) (/ (number x)
 													(denom x))))
+	(define (project x)
+		((get 'make 'integer) (number x)))
+	(define (drop x)
+		(if (= (tag x) (raise (project x)))
+			(project x)
+			#f))
 
 	(define (tag x) (attach-tag 'rational x))
 	(put 'number '(rational) number)
@@ -154,6 +176,8 @@
 	(put '=zero? '(rational)
 			 (lambda (x) (=zero? x)))
 	(put 'raise '(rational) raise)
+	(put 'project '(rational) project)
+	(put 'drop '(rational) drop)
 	'done)
 
 (define (install-rectangular-package)
@@ -225,6 +249,11 @@
 	(define (magnitude z) (apply-generic 'magnitude z))
 	(define (angle z) (apply-generic 'angle z))
 	(define (=zero? z) (apply-generic '=zero? z))
+	(define (project z) ((get 'make 'real) (real-part z)))
+	(define (drop z) 
+		(if (equ? (tag z) (raise (project z)))
+			(project z)
+			#f))
 
 	(define (add-complex z1 z2)
 		(make-from-real-imag (+ (real-part z1) (real-part z2))
@@ -257,6 +286,8 @@
 	(put 'magnitude '(complex) magnitude)
 	(put 'angle '(complex) angle)
 	(put '=zero? '(complex) =zero?)
+	(put 'drop '(complex) drop)
+	(put 'project '(complex) project)
 	'done)
 
 ;;;body;;;
@@ -291,6 +322,8 @@
 (define (imag-part z) (apply-generic 'imag-part z))
 (define (=zero? x) (apply-generic '=zero? x))
 (define (raise x) (apply-generic 'raise x))
+(define (drop x) (apply-generic 'drop x))
+(define (project x) (apply-generic 'project x))
 
 (define (equ? a b)
 	(let ((a-tag (type-tag a))
@@ -304,11 +337,6 @@
 					 (and (= (contents b) (number a)) (= 1 (denom a))))
 					(else #f))))
 
-(define c (make-complex-from-real-imag 3 4))
-(define r (make-real 7))
-(define q (make-rational 2 2))
-(define z (make-integer 3))
-
 (define type-tower
 	'(complex real rational integer))
 
@@ -320,4 +348,11 @@
 					(else (iter t1 t2 (cdr type-tower)))))
 	(iter t1 t2 type-tower))
 
-(add r z)
+(define c (make-complex-from-real-imag 3 4))
+(define r (make-real 7.0))
+(define q (make-rational 2 2))
+(define z (make-integer 3))
+
+(project q)
+(drop q)
+
