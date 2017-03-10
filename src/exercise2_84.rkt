@@ -65,33 +65,18 @@
 											(if (t1->t2 a1 a2)
 												(t1->t2 a1 a2)
 												(error "No method for these types"
-																		 (list op type-tags))))
+															 (list op type-tags))))
 										 (t1->t2 
 											 (apply-generic op (t1->t2 a1) a2))
 										 (t2->t1
-											(apply-generic op a1 (t2->t1 a2))) 
-										(else (error "No method for these types"
-																 (list op type-tags))))))
+											 (apply-generic op a1 (t2->t1 a2))) 
+										 (else (error "No method for these types"
+																	(list op type-tags))))))
 					(error "No method for these types" (list op type-tags)))))))
 
 ;;;content;;;
 (define (install-scheme-number-package)
 	(define (tag x) (attach-tag 'scheme-number x))
-	(define (decimal-place x)
-		(define (iter x result)
-			(if (= (remainder x 10) 0)
-				result
-				(iter (/ x 10) (+ result 1))))
-		(iter x 0))
-	(define (project x)
-		((get 'make 'rational) x
-													 (* 10 (decimal-place x))))
-	(define (drop x) 
-		(if (equ? (tag x) (raise (project x)))
-			(project x)
-			#f)	
-		((get 'make 'ratinal) x 10))
-
 	(put 'add '(scheme-number scheme-number)
 			 (lambda (x y) (tag (+ x y))))
 	(put 'sub '(scheme-number scheme-number)
@@ -104,12 +89,39 @@
 	(put '=zero? '(scheme-number) (lambda (x) (= x 0)))
 	(put 'exp '(scheme-number scheme-number)
 			 (lambda (x y) (tag (expt x y))))
-	(put 'raise '(scheme-number)
-			 (lambda (x) ((get 'make-from-real-imag 'complex) x 0)))
-	(put 'project '(scheme-number) project)
-	(put 'drop '(scheme-number) drop)
 	'done)
-	
+
+(define (install-integer-package)
+	(define (tag x) (attach-tag 'integer x))
+	(put 'add '(integer integer)
+			 (lambda (x y) (tag (+ x y))))
+	(put 'sub '(integer integer)
+			 (lambda (x y) (tag (- x y))))
+	(put 'mul '(integer integer)
+			 (lambda (x y) (tag (* x y))))
+	(put 'div '(integer integer)
+			 (lambda (x y) (tag (/ x y))))
+	(put 'make 'integer (lambda (x) (tag x)))
+	(put '=zero? '(integer) (lambda (x) (= x 0)))
+	(put 'raise '(integer) (lambda (x) ((get 'make 'rational) x 1)))
+	'done)
+
+(define (install-real-package)
+	(define (tag x) (attach-tag 'real x))
+	(put 'add '(real real)
+			 (lambda (x y) (tag (+ x y))))
+	(put 'sub '(real real)
+			 (lambda (x y) (tag (- x y))))
+	(put 'mul '(real real)
+			 (lambda (x y) (tag (* x y))))
+	(put 'div '(real real)
+			 (lambda (x y) (tag (/ x y))))
+	(put 'make 'real (lambda (x) (tag (* 1.0 x))))
+	(put '=zero? '(real) (lambda (x) (= x 0)))
+	(put 'raise '(real)
+			 (lambda (x) ((get 'make-from-real-imag 'complex) x 0)))
+	'done)
+
 (define (install-rational-package)
 	(define (number x) (car x))
 	(define (denom x) (cdr x))
@@ -133,9 +145,8 @@
 	(define (=zero? x)
 		(= (number x) 0))
 	(define (raise x)
-		((get 'make-from-real-imag 'complex) x 0))
-	(define (drop x)
-		((get 'make 'scheme-number) (/ (number x) (denom x))))
+		((get 'make 'real) (/ (number x)
+													(denom x))))
 
 	(define (tag x) (attach-tag 'rational x))
 	(put 'number '(rational) number)
@@ -153,7 +164,6 @@
 	(put '=zero? '(rational)
 			 (lambda (x) (=zero? x)))
 	(put 'raise '(rational) raise)
-	(put 'drop '(ratinal) drop)
 	'done)
 
 (define (install-rectangular-package)
@@ -225,11 +235,6 @@
 	(define (magnitude z) (apply-generic 'magnitude z))
 	(define (angle z) (apply-generic 'angle z))
 	(define (=zero? z) (apply-generic '=zero? z))
-	(define (project z) ((get 'make 'scheme-number) (real-part z)))
-	(define (drop z) 
-		(if (equ? (tag z) (raise (project z)))
-			(project z)
-			#f))
 
 	(define (add-complex z1 z2)
 		(make-from-real-imag (+ (real-part z1) (real-part z2))
@@ -243,7 +248,7 @@
 	(define (div-complex z1 z2)
 		(make-from-real-imag (/ (magnitude z1) (magnitude z2))
 												 (- (angle z1) (angle z2))))
-	
+
 	(define (tag z) (attach-tag 'complex z))
 	(put 'add '(complex complex)
 			 (lambda (z1 z2) (tag (add-complex z1 z2))))
@@ -262,12 +267,12 @@
 	(put 'magnitude '(complex) magnitude)
 	(put 'angle '(complex) angle)
 	(put '=zero? '(complex) =zero?)
-	(put 'drop '(complex) drop)
-	(put 'project '(complex) project)
 	'done)
 
 ;;;body;;;
 (install-scheme-number-package)
+(install-integer-package)
+(install-real-package)
 (install-rational-package)
 (install-polar-package)
 (install-rectangular-package)
@@ -275,6 +280,10 @@
 
 (define (make-scheme-number n)
 	((get 'make 'scheme-number) n))
+(define (make-integer i)
+	((get 'make 'integer) i))
+(define (make-real r)
+	((get 'make 'real) r))
 (define (make-rational n d)
 	((get 'make 'rational) n d))
 (define (make-complex-from-real-imag x y)
@@ -292,8 +301,6 @@
 (define (imag-part z) (apply-generic 'imag-part z))
 (define (=zero? x) (apply-generic '=zero? x))
 (define (raise x) (apply-generic 'raise x))
-(define (drop x) (apply-generic 'drop x))
-(define (project x) (apply-generic 'project x))
 
 (define (equ? a b)
 	(let ((a-tag (type-tag a))
@@ -307,19 +314,10 @@
 					 (and (= (contents b) (number a)) (= 1 (denom a))))
 					(else #f))))
 
-(define a (make-scheme-number 3))
-(define b (make-scheme-number 2.8))
-(define r1 (make-rational 2 2))
-(define r2 (make-rational 3 5))
-(define z1 (make-complex-from-real-imag 1 1))
-(define z2 (make-complex-from-real-imag 3 0))
-
-
-(drop z1)
-(drop z2)
-(drop a)
-
-
+(define c (make-complex-from-real-imag 3 4))
+(define r (make-real 7))
+(define q (make-rational 2 2))
+(define z (make-integer 3))
 
 
 
