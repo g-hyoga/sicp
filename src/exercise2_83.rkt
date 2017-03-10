@@ -89,6 +89,7 @@
 	(put '=zero? '(scheme-number) (lambda (x) (= x 0)))
 	(put 'exp '(scheme-number scheme-number)
 			 (lambda (x y) (tag (expt x y))))
+	(put 'raise '(scheme-number) (lambda (x) ((get 'make 'rational) x 1)))
 	'done)
 	
 (define (install-rational-package)
@@ -113,6 +114,8 @@
 							(* (denom x) (number y))))
 	(define (=zero? x)
 		(= (number x) 0))
+	(define (raise x)
+		((get 'make-from-real-imag 'complex) x 0))
 
 	(define (tag x) (attach-tag 'rational x))
 	(put 'number '(rational) number)
@@ -129,6 +132,7 @@
 			 (lambda (n d) (tag (make-rat n d))))
 	(put '=zero? '(rational)
 			 (lambda (x) (=zero? x)))
+	(put 'raise '(rational) raise)
 	'done)
 
 (define (install-rectangular-package)
@@ -234,16 +238,6 @@
 	(put '=zero? '(complex) =zero?)
 	'done)
 
-;;;coercion;;;
-(define (scheme-number->complex n)
-	(make-complex-from-real-imag (contents n) 0))
-(put-coercion 'scheme-number 'complex scheme-number->complex)
-
-(define (scheme-number->scheme-number n) n) 
-(define (complex->complex z) z) 
-(put-coercion 'scheme-number 'scheme-number scheme-number->scheme-number)
-(put-coercion 'complex 'complex complex->complex)
-
 ;;;body;;;
 (install-scheme-number-package)
 (install-rational-package)
@@ -269,6 +263,7 @@
 (define (real-part z) (apply-generic 'real-part z))
 (define (imag-part z) (apply-generic 'imag-part z))
 (define (=zero? x) (apply-generic '=zero? x))
+(define (raise x) (apply-generic 'raise x))
 
 (define (equ? a b)
 	(let ((a-tag (type-tag a))
@@ -284,19 +279,20 @@
 
 (define a (make-scheme-number 3))
 (define b (make-scheme-number 2))
+(define r (make-rational 2 2))
 (define z1 (make-complex-from-real-imag 1 1))
 (define z2 (make-complex-from-real-imag 3 4))
 
-(define (exp x y) (apply-generic 'exp x y))
 
-; 81-a 
-; (exp z1 z2)
-; complex から complexに変換ができるため
-; apply-generic内で、complex->complexがよばれ
-; またapply-genericが評価され、またcomplexからcomplexへ型変換される
+(raise a)
+(raise r)
+;(raise z1)
 
-; 81-c
-(exp a b)
+
+
+
+
+
 
 
 
