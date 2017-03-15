@@ -82,5 +82,4 @@
 (define q (make-rational 2 1))
 (define z (make-integer 3))
 
-;(raise z)
 (drop r)

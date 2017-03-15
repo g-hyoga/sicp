@@ -12,7 +12,7 @@
 				((number? datum) datum)
 				(else (error "Bad tagged datum: CONTENTS" datum))))
 
-(define (apply-generic op . args)
+#;(define (apply-generic op . args)
 	(let ((type-tags (map type-tag args)))
 		(let ((proc (get op type-tags))) 
 			(if proc
@@ -36,6 +36,34 @@
 										 (else (error "No method for these types"
 																	(list op type-tags))))))
 					(error "No method for these types" (list op type-tags)))))))
+
+(define (apply-generic op . args)
+	(let ((type-tags (map type-tag args)))
+		(let ((proc (get op type-tags))) 
+			(if proc
+				(apply proc (map contents args))
+				(if (= (length args) 2)
+					(let ((type1 (car type-tags)) 
+								(type2 (cadr type-tags))
+								(a1 (car args))
+								(a2 (cadr args)))
+						(cond ((eq? type1 (higher type1 type2)) 
+									 (apply-generic op a1 (raise a2)))
+									((eq? type2 (higher type1 type2))
+									 (apply-generic op (raise a1) a2))
+									(else (error "No method for these types" (list op type-tags)))))
+					(error "No method for these types" (list op type-tags)))))))
+
+(define type-tower
+	'(complex real rational integer))
+
+(define (higher t1 t2)
+	(define (iter t1 t2 type-tower)
+		(cond ((eq? t1 t2) t1)
+					((eq? t1 (car type-tower)) t1)
+					((eq? t2 (car type-tower)) t2)
+					(else (iter t1 t2 (cdr type-tower)))))
+	(iter t1 t2 type-tower))
 
 (provide attach-tag)
 (provide type-tag)

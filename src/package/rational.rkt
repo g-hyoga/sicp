@@ -9,7 +9,7 @@
 		(let ((g (gcd n d)))
 			(cons (/ n g) (/ d g))))
 	(define (add-rat x y)
-		(make-rat (+ (* numer x) (denom y)
+		(make-rat (+ (* (numer x) (denom y))
 								 (* (numer y) (denom x)))
 							(* (denom x) (denom y))))
 	(define (sub-rat x y)

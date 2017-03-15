@@ -1,0 +1,1 @@
+("6.4" ("caab9c8d11ad3f22c25adacdf5cd77a06ea5e396" . "6d345640fe04d3ec4769434d9cfd2a223de64caa") #"/Users/glacier/Dropbox/dev/src/github.com/g-hyoga/sicp/src/package/get-put.rkt" (collects #"errortrace" #"errortrace-key.rkt") (collects #"racket" #"main.rkt") (collects #"racket" #"runtime-config.rkt"))
