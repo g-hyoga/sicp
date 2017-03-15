@@ -1,6 +1,7 @@
 #lang racket 
 (require "tag.rkt")
 (require "get-put.rkt")
+(require "number.rkt")
 
 (define (install-polynomial-package)
 	(define (make-poly variable term-list)
@@ -32,7 +33,6 @@
 															(variable p)
 															(cdr (term-list p)))))))))
 
-	(define (add x y) (apply-generic 'add x y))
 	(define (add-terms L1 L2)
 		(cond ((empty-termlist? L1) L2)
 					((empty-termlist? L2) L1)
@@ -51,7 +51,6 @@
 																	 (add (coeff t1) (coeff t2)))
 												(add-terms (rest-terms L1)
 																	 (rest-terms L2)))))))))
-	(define (mul x y) (apply-generic 'mul x y))
 	(define (mul-terms L1 L2)
 		(if (empty-termlist? L1)
 			(the-empty-termlist)
@@ -88,5 +87,3 @@
 	'done)
 
 (provide install-polynomial-package)
-
-

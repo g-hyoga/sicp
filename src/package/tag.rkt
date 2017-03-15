@@ -5,65 +5,19 @@
 	(cons type-tag contents))
 (define (type-tag datum)
 	(cond ((pair? datum) (car datum))
-				((number? datum) 'scheme-number)
+				((number? datum) 'real)
 				(else (error "Bad tagged datum: TYPE-TAG" datum))))
 (define (contents datum)
 	(cond ((pair? datum) (cdr datum))
 				((number? datum) datum)
 				(else (error "Bad tagged datum: CONTENTS" datum))))
 
-#;(define (apply-generic op . args)
-	(let ((type-tags (map type-tag args)))
-		(let ((proc (get op type-tags))) 
-			(if proc
-				(apply proc (map contents args))
-				(if (= (length args) 2)
-					(let ((type1 (car type-tags)) 
-								(type2 (cadr type-tags))
-								(a1 (car args))
-								(a2 (cadr args)))
-						(let ((t1->t2 (get-coercion type1 type2))
-									(t2->t1 (get-coercion type2 type1))) 
-							(cond  ((eq? type1 type2)
-											(if (t1->t2 a1 a2)
-												(t1->t2 a1 a2)
-												(error "No method for these types"
-															 (list op type-tags))))
-										 (t1->t2 
-											 (apply-generic op (t1->t2 a1) a2))
-										 (t2->t1
-											 (apply-generic op a1 (t2->t1 a2))) 
-										 (else (error "No method for these types"
-																	(list op type-tags))))))
-					(error "No method for these types" (list op type-tags)))))))
-
 (define (apply-generic op . args)
 	(let ((type-tags (map type-tag args)))
-		(let ((proc (get op type-tags))) 
+		(let ((proc (get op type-tags)))
 			(if proc
 				(apply proc (map contents args))
-				(if (= (length args) 2)
-					(let ((type1 (car type-tags)) 
-								(type2 (cadr type-tags))
-								(a1 (car args))
-								(a2 (cadr args)))
-						(cond ((eq? type1 (higher type1 type2)) 
-									 (apply-generic op a1 (raise a2)))
-									((eq? type2 (higher type1 type2))
-									 (apply-generic op (raise a1) a2))
-									(else (error "No method for these types" (list op type-tags)))))
-					(error "No method for these types" (list op type-tags)))))))
-
-(define type-tower
-	'(complex real rational integer))
-
-(define (higher t1 t2)
-	(define (iter t1 t2 type-tower)
-		(cond ((eq? t1 t2) t1)
-					((eq? t1 (car type-tower)) t1)
-					((eq? t2 (car type-tower)) t2)
-					(else (iter t1 t2 (cdr type-tower)))))
-	(iter t1 t2 type-tower))
+				(error "No method for these types: APPLY-GENERIC" (list op type-tags))))))
 
 (provide attach-tag)
 (provide type-tag)

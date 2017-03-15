@@ -1,5 +1,6 @@
 #lang racket
 (require "get-put.rkt")
+(require "tag.rkt")
 
 (define (install-scheme-number-package)
 	(define (tag x) (attach-tag 'scheme-number x))
