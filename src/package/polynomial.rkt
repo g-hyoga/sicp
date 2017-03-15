@@ -21,17 +21,17 @@
 			(make-poly (variable p1)
 								 (mul-terms (term-list p1) (term-list p2)))
 			(error "Polys not in same var: MUL-POLY" (list p1 p2))))
-	(define (=zero? p)
+	(define (0? p)
 		(if (null? (term-list p))
 			#f
 			(let* ((t (car (term-list p)))
 						 (o (order t))
 						 (c (coeff t)))
-				(cond ((and (= o 0)
-										(= c 0)) #t)
-							(else (=zero? (make-poly
-															(variable p)
-															(cdr (term-list p)))))))))
+				(cond ((and (=zero? o)
+										(=zero? c)) #t)
+							(else (0? (make-poly
+													(variable p)
+													(cdr (term-list p)))))))))
 
 	(define (add-terms L1 L2)
 		(cond ((empty-termlist? L1) L2)
@@ -65,7 +65,7 @@
 										 (mul (coeff t1) (coeff t2)))
 					(mul-term-by-all-terms t1 (rest-terms L))))))	
 	(define (adjoin-term term term-list)
-		(if (=zero? (coeff term))
+		(if (0? (coeff term))
 			term-list
 			(cons term term-list)))
 	(define (the-empty-termlist) '())
@@ -83,7 +83,7 @@
 			 (lambda (p1 p2) (tag (mul-poly p1 p2))))
 	(put 'make 'polynomial
 			 (lambda (var terms) (tag (make-poly var terms))))
-	(put '=zero? '(polynomial) =zero?)
+	(put '=zero? '(polynomial) 0?)
 	'done)
 
 (provide install-polynomial-package)
