@@ -7,10 +7,11 @@
 (define z (make-integer 3))
 (define zero (make-integer 0))
 
-(define p1 (make-poly 'x (list (list 100 1) (list 2 2) (list 0 1))))
+(define p1 (make-poly 'x (list (list z z))))
 (define p2 (make-poly 'x (list (list 10 0) (list 2 3) (list 0 4))))
 (define p3 (make-poly 'x (list (list zero zero))))
+;(=zero? p1)
 (=zero? p3)
 
-;(add p1 p2)
+(add p1 p1)
 
