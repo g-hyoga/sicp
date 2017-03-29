@@ -1,0 +1,28 @@
+#lang racket
+
+(define RAND_MAX 2147483647)
+
+(define (rand-update x)
+ (remainder (+ (* 1103515245 x) 12345) RAND_MAX))
+	(define (make-rand seed)
+	 (define (get-rand)
+	  (begin (set! seed (rand-update seed))
+	   seed))
+	 (define (randint range)
+	  (remainder (get-rand) range))
+	 (define (random range)
+	  (* (/ (get-rand) RAND_MAX) range 1.0))
+	 (define (dispatch proc)
+	  (cond ((eq? proc 'get-rand)
+		 get-rand)
+	   ((eq? proc 'randint)
+	    randint)
+	   ((eq? proc 'random)
+	    random)
+	   (else (error "Unknown request: MAKE-RAND"
+		  proc))))
+	 dispatch)
+
+(provide RAND_MAX)
+(provide rand-update)
+(provide make-rand)
