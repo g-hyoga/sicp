@@ -42,7 +42,6 @@
 	(display ")")
 	(display "\n"))
 
-
 (define (make-deque) (cons '() '()))
 (define (empty-deque? deque)
 	(and (null? (front-ptr deque))
@@ -92,7 +91,5 @@
 (front-insert-deque! d1 'b)
 (rear-insert-deque! d1 'c)
 (front-delete-deque! d1)
-
-
 
 
