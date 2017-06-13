@@ -91,5 +91,5 @@
 (front-insert-deque! d1 'b)
 (rear-insert-deque! d1 'c)
 (front-delete-deque! d1)
-
+(rear-delete-deque! d1)
 

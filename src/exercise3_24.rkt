@@ -41,12 +41,11 @@
 											(cdr table)))))
 	'ok)
 
-(define (assoc key records)
-	(cond ((null? records) #f)
-				 ((equal? key (caar records)) (car records))
-				 (else (assoc key (cdr records)))))
-
-(define (make-table)
+(define (make-table same-key?)
+	(define (assoc key records)
+		(cond ((null? records) #f)
+					((same-key? key (caar records)) (car records))
+					(else (assoc key (cdr records)))))
 	(let ((local-table (list '*table*)))
 		(define (helper key-1 key-2 p1 p2 p3)
 			(let ((subtable (assoc key-1 (cdr local-table))))
@@ -75,7 +74,7 @@
 		dispatch))
 
 
-(define operation-table (make-table))
+(define operation-table (make-table equal?))
 (define get (operation-table 'lookup-proc))
 (define put (operation-table 'insert-proc!))
 

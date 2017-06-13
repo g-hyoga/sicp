@@ -103,10 +103,11 @@
 																		(make-leaf 'C 1)))))
 (define sample-message '(0 1 1 0 0 1 0 1 0 1 1 1 0))
 
-(define A (list 'A 5))
-(define B (list 'B 10))
-(define C (list 'C 7))
+(define A (list 'A 3))
+(define B (list 'B 1))
+(define C (list 'C 1))
+(define D (list 'D 2))
 
-(generate-huffman-tree (list A B C))
+(generate-huffman-tree (list A B C D))
 
 
