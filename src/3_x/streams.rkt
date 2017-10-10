@@ -1,11 +1,10 @@
-#lang racket
+#lang planet neil/sicp
 
-(define stream-null? stream-empty?)
+(define (strem-null? streams)
+	(= streams '()))
 
 (define (cons-stream a b)
-	(stream-cons a b))
-
-(define the-empty-stream (stream '()))
+	(cons a (delay b)))
 
 (define (stream-car stream) (car stream))
 (define (stream-cdr stream) (force (cdr stream)))
@@ -38,26 +37,11 @@
 		(stream-ref (stream-cdr s) (- n 1))))
 
 (define (stream-map proc . argstreams)
-	(if (stream-null? (car argstreams))
+	(if (strem-null? (car argstreams))
 		the-empty-stream
 		(cons-stream
 			(apply proc (map car argstreams))
 			(apply stream-map
 						 (cons proc (map cdr argstreams))))))
 
-(define (display-line x)
-	(display x)
-	(display "\n"))
-
-(define (show x)
-	(display-line x)
-	x)
-
-
-(define x
-	(stream-map show
-							(stream-enumerate-interval 0 10)))
-
-(stream-ref x 5)
-(stream-ref x 7)
 

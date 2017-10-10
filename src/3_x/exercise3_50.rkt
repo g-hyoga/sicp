@@ -1,4 +1,12 @@
-#lang planet neil/sicp
+#lang racket
+
+(require racket/stream)
+
+(define strem-null? stream-empty?)
+
+(define the-empty-stream (stream '()))
+
+(define cons-stream stream-cons)
 
 (define (memo-proc proc)
 	(let ((already-run? #f) (result #f))

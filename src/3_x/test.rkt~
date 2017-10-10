@@ -1,0 +1,29 @@
+#lang racket
+
+(require racket/stream)
+
+;-------
+(define (prime? n)
+	(= (smallest-divisor n) n))
+
+(define (smallest-divisor n) (find-divisor n 2))
+
+(define (divides? a b) (= (remainder b a) 0))
+
+(define (find-divisor n test-divisor)
+	(cond ((> (square test-divisor) n) n)
+				((divides? test-divisor n) test-divisor)
+				(else (find-divisor n (+ test-divisor 1)))))
+;-------
+
+(define (sum-primes a b)
+	(define (iter count accum)
+		(cond ((> count b) accum)
+					((prime? count)
+					 (iter (+ count 1) (+ count accum)))
+					(else (iter (+ count 1) accum))))
+	(iter a 0))
+
+(stream? "hoge")
+
+
