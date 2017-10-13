@@ -37,4 +37,5 @@
 
 (s 'wait)
 (s 'wait)
+(s 'signal)
 (s 'wait)
