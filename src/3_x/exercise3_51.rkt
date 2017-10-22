@@ -1,14 +1,38 @@
 #lang racket
 
-(define stream-null? stream-empty?)
+;-----------------------------------------------------------------
+
+(require racket/stream)
+
+(define strem-null? stream-empty?)
+
+(define the-empty-stream empty-stream)
 
 (define (cons-stream a b)
 	(stream-cons a b))
 
-(define the-empty-stream (stream '()))
+(define stream-car stream-first)
+(define stream-cdr stream-rest)
 
-(define (stream-car stream) (car stream))
-(define (stream-cdr stream) (force (cdr stream)))
+(define (memo-proc proc)
+	(let ((already-run? #f) (result #f))
+		(lambda ()
+			(if (not already-run?)
+				(begin (set! result (proc))
+							 (set! already-run? true)
+							 result)
+				result))))
+
+(define (delay delayed-object)
+	(memo-proc delayed-object))
+
+(define (stream-map proc . argstreams)
+	(if (strem-null? (car argstreams))
+		the-empty-stream
+		(cons-stream
+			(apply proc (map stream-car argstreams))
+			(apply stream-map
+						 (cons proc (map stream-cdr argstreams))))))
 
 (define (stream-enumerate-interval low high)
 	(if (> low high)
@@ -17,47 +41,25 @@
 			low
 			(stream-enumerate-interval (+ low 1) high))))
 
-(define (stream-filter pred stream)
-	(cond ((stream-null? stream) the-empty-stream)
-				((pred (stream-car stream))
-				 (cons-stream (stream-car stream)
-											(stream-filter
-												pred
-												(stream-cdr stream))))
-				(else (stream-filter pred (stream-cdr stream)))))
-
-(define (stream-for-each proc s)
-	(if (stream-null? s)
-		'done
-		(begin (proc (stream-car s))
-					 (stream-for-each proc (stream-cdr s)))))
-
-(define (stream-ref s n)
-	(if (= n 0)
-		(stream-car s)
-		(stream-ref (stream-cdr s) (- n 1))))
-
-(define (stream-map proc . argstreams)
-	(if (stream-null? (car argstreams))
-		the-empty-stream
-		(cons-stream
-			(apply proc (map car argstreams))
-			(apply stream-map
-						 (cons proc (map cdr argstreams))))))
+;-----------------------------------------------------------------
 
 (define (display-line x)
 	(display x)
-	(display "\n"))
+	(newline))
 
 (define (show x)
 	(display-line x)
 	x)
 
-
 (define x
 	(stream-map show
 							(stream-enumerate-interval 0 10)))
 
+; defaultでmemo化されている？
 (stream-ref x 5)
 (stream-ref x 7)
+
+
+
+
 
