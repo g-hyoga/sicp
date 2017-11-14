@@ -14,6 +14,10 @@ object Main {
       }
     }
 
-    println(merge(multipleOf(2), merge(multipleOf(3), multipleOf(5))).take(10).toList)
+    def scaleStream(s: Stream[Int], n: Int): Stream[Int] = s.map( _ * n )
+
+    def s(): Stream[Int] = 1 #:: merge(scaleStream(s, 2), merge(scaleStream(s, 3), scaleStream(s, 5)))
+
+    println(s.take(15).toList)
   }
 }
