@@ -50,8 +50,8 @@
 
 (define (mul-series s1 s2)
   (stream-cons (* (stream-first s1) (stream-first s2)) 
-               (add-stream ??
-                           ??)))
+               (add-stream (scale-stream (stream-first s1) s2)
+                           (mul-series (stream-rest s1) (stream-rest s2)))))
 
 (define s1 (stream-enumerate-interval 0 5))
 (define s2 (stream-enumerate-interval 5 10))
