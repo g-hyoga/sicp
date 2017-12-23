@@ -37,7 +37,7 @@
                       (merge (stream-rest s1) (stream-rest s2)))))))))
 
 (define s (stream-cons 1 (merge (scale-stream s 2)
-                                       (merge (scale-stream s 3) (scale-stream s 5)))))
+                                (merge (scale-stream s 3) (scale-stream s 5)))))
 
 (stream-ref s 0)
 (stream-ref s 1)
