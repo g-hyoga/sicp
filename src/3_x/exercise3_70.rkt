@@ -51,24 +51,13 @@
 ; weight: list[A] => int
 ; return: stream[list[A]]
 (define (weighted-pairs s t weight)
-  (let ((scar (stream-first s))
-        (tcar (stream-first t))
-        (scdr (stream-rest s))
-        (tcdr (stream-rest t)))
-    (cond ((< (weight scar) (weight tcar))
-           (stream-cons
-             scar
-             (weighted-pairs scdr t weight)))
-          ((> (weight scar) (weight tcar))
-           (stream-cons
-             tcar
-             (weighted-pairs s tcdr weight)))
-          ((= (weight scar) (weight tcar))
-           (stream-cons
-             scar
-             (stream-cons
-               tcar
-               (weighted-pairs scdr tcdr weight)))))))
+  (stream-cons
+    (list (stream-first s) (stream-first t))
+    (merge-weighted
+      (stream-map (lambda (x) (list (stream-first s) x))
+                  (stream-rest t))
+      (weighted-pairs (stream-rest s) (stream-rest t) weight)
+      weight)))
 
 (define (integer-starting-from n)
 	(stream-cons n (integer-starting-from (+ n 1))))
