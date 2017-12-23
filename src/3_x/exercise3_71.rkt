@@ -55,8 +55,13 @@
 ; weight: list[A] => int
 ; return: stream[list[A]]
 (define (weighted-pairs s t weight)
-  (let ((ps (pairs s t)))
-    (merge-weighted ps ps weight)))
+  (stream-cons
+    (list (stream-first s) (stream-first t))
+    (merge-weighted
+      (stream-map (lambda (x) (list (stream-first s) x))
+                  (stream-rest t))
+      (weighted-pairs (stream-rest s) (stream-rest t) weight)
+      weight)))
 
 (define (integer-starting-from n)
   (stream-cons n (integer-starting-from (+ n 1))))
@@ -81,11 +86,14 @@
         (iter rest))))
   (iter cube))
 
-(define r (ramanujan))
+(define (w pair)
+    (+ (* (car pair) (car pair) (car pair))
+       (* (cadr pair) (cadr pair) (cadr pair))))
 
-(stream-first r)
-;(stream-first (stream-rest r))
-;(stream-first (stream-rest (stream-rest r)))
-;(stream-first (stream-rest (stream-rest (stream-rest r))))
-;(stream-first (stream-rest (stream-rest (stream-rest (stream-rest r)))))
-(display "\n")
+(define r (ramanujan))
+  
+(w (stream-first r))
+(w (stream-first (stream-rest r)))
+(w (stream-first (stream-rest (stream-rest r))))
+(w (stream-first (stream-rest (stream-rest (stream-rest r)))))
+(w (stream-first (stream-rest (stream-rest (stream-rest (stream-rest r))))))
