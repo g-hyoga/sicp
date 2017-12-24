@@ -93,6 +93,7 @@
 
 (define r (ramanujan))
 
+;'(255 414)
 (stream-first r)
 ;(stream-first (stream-rest r))
 ;(stream-first (stream-rest (stream-rest r)))
