@@ -78,7 +78,7 @@
            (second (stream-first rest))
            (third (stream-first (stream-rest rest))))
       (if (= (weight first) (weight second) (weight third))
-        (stream-cons (weight third) (iter (stream-rest rest)))
+        (stream-cons (list (weight third) (list first second third)) (iter (stream-rest rest)))
         (iter rest))))
   (iter cube))
 
@@ -90,9 +90,9 @@
 
 ;'(255 414)
 (stream-first r)
-;(stream-first (stream-rest r))
-;(stream-first (stream-rest (stream-rest r)))
-;(stream-first (stream-rest (stream-rest (stream-rest r))))
-;(stream-first (stream-rest (stream-rest (stream-rest (stream-rest r)))))
+(stream-first (stream-rest r))
+(stream-first (stream-rest (stream-rest r)))
+(stream-first (stream-rest (stream-rest (stream-rest r))))
+(stream-first (stream-rest (stream-rest (stream-rest (stream-rest r)))))
 
 
