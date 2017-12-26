@@ -76,7 +76,6 @@
 (stream-first (stream-rest (stream-rest (stream-rest (stream-rest a)))))
 (display "\n")
 
-
 (define (b? x)
   (not (or (= (remainder x 2) 0)
            (= (remainder x 3) 0)

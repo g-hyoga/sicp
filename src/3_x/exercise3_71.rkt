@@ -82,7 +82,7 @@
            (first (stream-first c))
            (second (stream-first rest)))
       (if (= (weight first) (weight second))
-        (stream-cons second (iter rest))
+        (stream-cons (weight second) (iter rest))
         (iter rest))))
   (iter cube))
 
