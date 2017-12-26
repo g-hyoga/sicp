@@ -86,14 +86,10 @@
         (iter rest))))
   (iter cube))
 
-(define (w pair)
-    (+ (* (car pair) (car pair) (car pair))
-       (* (cadr pair) (cadr pair) (cadr pair))))
-
 (define r (ramanujan))
   
-(w (stream-first r))
-(w (stream-first (stream-rest r)))
-(w (stream-first (stream-rest (stream-rest r))))
-(w (stream-first (stream-rest (stream-rest (stream-rest r)))))
-(w (stream-first (stream-rest (stream-rest (stream-rest (stream-rest r))))))
+(stream-first r)
+(stream-first (stream-rest r))
+(stream-first (stream-rest (stream-rest r)))
+(stream-first (stream-rest (stream-rest (stream-rest r))))
+(stream-first (stream-rest (stream-rest (stream-rest (stream-rest r)))))
