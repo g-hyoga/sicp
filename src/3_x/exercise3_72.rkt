@@ -30,17 +30,12 @@
                    (stream-cons
                      s2car
                      (merge-weighted s1 (stream-rest s2) weight)))
-                  ((and (or (not (= (car s1car) (car s2car))) (not (= (cadr s1car) (cadr s2car))))
-                        (= (weight s1car) (weight s2car)))
+                  (else
                    (stream-cons
                      s1car
                      (stream-cons
                        s2car
-                       (merge-weighted (stream-rest s1) (stream-rest s2) weight))))
-                  (else
-                    (stream-cons
-                      s1car
-                      (merge-weighted (stream-rest s1) (stream-rest s2) weight))))))))
+                       (merge-weighted (stream-rest s1) (stream-rest s2) weight)))))))))
 
 (define (pairs s t)
   (stream-cons
