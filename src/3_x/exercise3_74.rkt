@@ -73,12 +73,12 @@
 (define zero-crossings
   (make-zero-crossings sense-data 0))
 
-; (list->stream (list 1 2   1.5 1   0.5  -0.1 -2 -3 -2   -0.5 0.2 3 4))
-; (list->stream (list 2 1.5 1   0.5 -0.1 -2   -3 -2 -0.5  0.2 3   4  ))
+; (list->stream (list 1 2 1.5 1   0.5 -0.1 -2   -3 -2 -0.5  0.2 3   4  ))
+; (list->stream (list 0 1 2   1.5 1    0.5 -0.1 -2 -3 -2   -0.5 0.2 3 4))
 (define zero-crossings2
   (stream-map sign-change-detector
               sense-data
-              (stream-rest sense-data)))
+              (stream-cons 0 sense-data)))
 
 (stream->list sense-data)
 (stream-ref zero-crossings 0)
@@ -89,9 +89,9 @@
 (display "\n")
 
 (stream-ref zero-crossings2 0)
-(stream-ref zero-crossings2 4)
-(stream-ref zero-crossings2 7)
+(stream-ref zero-crossings2 5)
 (stream-ref zero-crossings2 9)
+(stream-ref zero-crossings2 10)
 
 
 
