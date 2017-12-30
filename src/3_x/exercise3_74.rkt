@@ -22,6 +22,17 @@
 ; return: Stream[number]
 (define (add-stream s1 s2) (stream-map + s1 s2))
 
+; proc: (A, A, ..) => A
+; argstreams: List[Stream[A]]
+; return: Stream[A]
+(define (stream-map proc . argstreams)
+	(if (stream-empty? (car argstreams))
+		empty-stream
+		(stream-cons
+			(apply proc (map stream-first argstreams))
+			(apply stream-map
+						 (cons proc (map stream-rest argstreams))))))
+
 ; initial-value + Σ(integrand * dt)
 ; integrand: Stream[number]
 ; initial-value: number
@@ -37,10 +48,9 @@
 ; first: number
 ; second: number
 ; return: number{-1, 0, 1}
-; sicpに書いてあるやつ逆になってる...?
 (define (sign-change-detector first second)
-  (cond ((and (>= first 0) (< second 0)) 1)
-        ((and (< first 0) (>= second 0)) -1)
+  (cond ((and (>= first 0) (< second 0)) -1)
+        ((and (< first 0) (>= second 0)) 1)
         (else 0)))
 
 ; input-stream: Stream[number]
@@ -57,15 +67,31 @@
 
 ; return: Stream[number]
 (define sense-data
-  (list->stream (list 1 2 1.5 1 0.5 -0.1 -2 -3 -2 -0.5 0.2 3 4)))
+  (list->stream (list 1 2   1.5 1   0.5  -0.1 -2 -3 -2   -0.5 0.2 3 4)))
 
 ; return: Stream[number]
 (define zero-crossings
   (make-zero-crossings sense-data 0))
+
+; (list->stream (list 1 2   1.5 1   0.5  -0.1 -2 -3 -2   -0.5 0.2 3 4))
+; (list->stream (list 2 1.5 1   0.5 -0.1 -2   -3 -2 -0.5  0.2 3   4  ))
+(define zero-crossings2
+  (stream-map sign-change-detector
+              sense-data
+              (stream-rest sense-data)))
 
 (stream->list sense-data)
 (stream-ref zero-crossings 0)
 (stream-ref zero-crossings 5)
 (stream-ref zero-crossings 9)
 (stream-ref zero-crossings 10)
+
+(display "\n")
+
+(stream-ref zero-crossings2 0)
+(stream-ref zero-crossings2 4)
+(stream-ref zero-crossings2 7)
+(stream-ref zero-crossings2 9)
+
+
 
