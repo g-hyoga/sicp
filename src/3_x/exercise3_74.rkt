@@ -48,6 +48,7 @@
 ; first: number
 ; second: number
 ; return: number{-1, 0, 1}
+; sicp逆に書いてる?
 (define (sign-change-detector first second)
   (cond ((and (>= first 0) (< second 0)) -1)
         ((and (< first 0) (>= second 0)) 1)
