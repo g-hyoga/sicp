@@ -72,11 +72,20 @@
 ; y0: number
 ; dy0: number
 ; return: Stream[number]
-(define (solve-2nd f y0 dt))
+(define (solve-2nd f y0 dy0 dt)
+  (define y (integral (delay dy) y0 dt))
+  (define dy (integral (delay ddy) dy0 dt))
+  (define ddy (stream-map f y))
+  y)
 
 (stream-ref (solve (lambda (y) y)
                    1
                    0.001)
             1000)
 
+(stream-ref (solve-2nd (lambda (y) y)
+                       1
+                       1
+                       0.001)
+            1000)
 
