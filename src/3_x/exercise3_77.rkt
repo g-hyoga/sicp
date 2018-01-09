@@ -52,7 +52,7 @@
     (let ((integrand (force delayed-integrand)))
       (if (stream-empty? integrand)
         empty-stream
-        (integral (stream-rest integrand)
+        (integral (delay (stream-rest integrand))
                   (+ (* dt (stream-first integrand))
                      initial-value)
                   dt)))))
