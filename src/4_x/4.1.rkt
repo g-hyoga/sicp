@@ -46,6 +46,13 @@
     (cons (eval (first-operand exps) env)
           (list-of-values (rest-operands exps) env))))
 
+(define (left-list-of-value exps env)
+  (if (no-operands? exps)
+    '()
+    ))
+
+(define (right-list-of-value exps env))
+
 (define (eval-if exp env)
   (if (true? (eval (if-predicate exp) env))
     (eval (if-consequent exp) env)
@@ -58,11 +65,18 @@
           (eval (first-exp exps) env)
           (eval-sequence (rest-exps exps) env))))
 
+; return: Quote
+(define (eval-assignment exp env)
+  (set-variable-value! (assignment-variable exp)
+                       (eval (assinment-value exp) env)
+                       env)
+  'ok)
+
+; return: Quote
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
                     (eval (definition-value exp) env)
                     env)
   'ok)
-
 
 
