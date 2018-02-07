@@ -1,16 +1,17 @@
 package scheme
 
-import scheme.parser.Parser
+import scheme.parser.{Node, Parser}
 
 object Main extends App {
   val code =
     """
-      (define hoge (lambda (x) (+ 1 2)))
-      (+ 1 2 (* 3 (/ 4 5) 6) 7)
+      (define hoge "hoge")
     """.stripMargin
 
   val parser = new Parser(code)
-  parser.parse.foreach(println)
+  val node: Node = parser.parse(0).nodes(2)
+  val generator = new Generator
+  println(generator.generate(node).eval)
 }
 
 

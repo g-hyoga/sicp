@@ -1,11 +1,12 @@
 package scheme.parser
 
-class Parser(input: String) {
-  case class Node(value: String, var nodes: Seq[Node]) {
-    def setNode(ns: Seq[Node]) = {
-      nodes = ns
-    }
+case class Node(value: String, var nodes: Seq[Node]) {
+  def setNode(ns: Seq[Node]) = {
+    nodes = ns
   }
+}
+
+class Parser(input: String) {
 
   def tokenize: Seq[String] = {
     input.replaceAll("\n", "")
