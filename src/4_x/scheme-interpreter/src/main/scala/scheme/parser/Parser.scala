@@ -17,24 +17,29 @@ class Parser(input: String) {
       .filter(_ != "")
   }
 
-  def parse: Seq[Node] = {
+  def parse: Node = {
     var seq: Seq[String] = tokenize.toList
 
-    def go(node: Node): Seq[Node] = seq match {
-      case head :: Nil => node.nodes
-      case head :: tail if (head == ")") => node.nodes
+    def go(node: Node): Node = seq match {
+      case head :: Nil => node
+      case head :: tail if (head == ")") => {
+        seq = seq.drop(1)
+        node
+      }
       case head :: tail if (head == "(") => {
-        seq.drop(1)
-        node.nodes :+ new Node("", go(node))
+        seq = seq.drop(1)
+        val newNode =  go(new Node("", Seq()))
+        node.setNode(node.nodes :+ newNode)
+        go(node)
       }
       case head :: tail => {
         node.setNode(node.nodes :+ new Node(head, Seq()))
-        seq.drop(1)
+        seq = seq.drop(1)
         go(node)
       }
     }
 
-    go(new Node("", Seq()))
+    go(new Node("", Seq())).nodes(0)
   }
 
 }
