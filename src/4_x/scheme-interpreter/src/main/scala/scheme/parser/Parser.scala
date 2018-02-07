@@ -17,7 +17,7 @@ class Parser(input: String) {
       .filter(_ != "")
   }
 
-  def parse: Node = {
+  def parse: Seq[Node] = {
     var seq: Seq[String] = tokenize.toList
 
     def go(node: Node): Node = seq match {
@@ -39,7 +39,7 @@ class Parser(input: String) {
       }
     }
 
-    go(new Node("", Seq())).nodes(0)
+    go(new Node("", Seq())).nodes
   }
 
 }
