@@ -1,14 +1,12 @@
 package scheme
 
-import scheme.SelfEvaluating.Num.Num
-import scheme.SelfEvaluating.Str.Str
+import scheme.parser.Parser
 
 object Main extends App {
-  val num: Num = new Num(3)
-  val str: Str = new Str("hoge")
+  val code = "(define hoge (lambda (x) (+ 1 2 3)))"
 
-  println(num.eval())
-  println(str.eval())
+  val parser = new Parser(code)
+  parser.parse.foreach(println)
 }
 
 

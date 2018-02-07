@@ -1,5 +1,5 @@
 package scheme
 
-abstract class Environment {
-
+trait Environment {
+  val variables: Map[String, Expression]
 }
