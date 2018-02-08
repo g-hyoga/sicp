@@ -22,7 +22,10 @@ class Parser(input: String) {
     var seq: Seq[String] = tokenize.toList
 
     def go(node: Node): Node = seq match {
-      case head :: Nil => node
+      case head :: Nil => {
+        node.setNode(node.nodes :+ new Node(head, Seq()))
+        node
+      }
       case head :: tail if (head == ")") => {
         seq = seq.drop(1)
         node

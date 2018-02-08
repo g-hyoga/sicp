@@ -8,19 +8,17 @@ import scheme.parser.Node
 case class ExprNode(expr: Expression, exprNodes: Seq[ExprNode])
 
 class Generator {
-  private def generate(str: String): Expression = {
-    if (str.matches("""\d+""")) {
-      new Num(str.toDouble)
-    } else if (str.matches("""\"*\"""")) {
-      new Str(str)
-    } else if (str.matches("""define""")) {
-      new Definication(str)
-    } else {
-      throw new Error("generator error")
+  private def go(node: Node): Expression = {
+    if (node.value.matches("""\d+""")) { // number
+      new Num(node.value.toDouble)
+    } else if (node.value.matches("""\"*\"""")) { // string
+      new Str(node.value)
+    } else if (node.value.matches("""define""")) {
+      new Definication()
     }
   }
 
   def generate(node: Node): ExprNode = {
-    new ExprNode(generate(node.value), node.nodes.map(generate(_)))
+    new ExprNode(go(node), node.nodes.map(generate(_)))
   }
 }

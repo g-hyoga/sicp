@@ -2,15 +2,11 @@ package scheme.Variable
 
 import scheme.{Environment, Expression}
 
-class Variable(val s: String, val vs: Map[String, Expression]) extends Expression with Environment {
-  override val variables: Map[String, Expression] = vs
-
-  def lookup(s: String): Expression = {
-    variables.getOrElse(s, new Expression {
-      override def eval(): String =  ""
-    })
+class Variable(val s: String, env: Environment) extends Expression {
+  def lookup(s: String): Option[Expression] = {
+    env.lookupVariableValue(s)
   }
 
-  override def eval(): Expression = lookup(s)
+  override def eval(): Expression = lookup(s).get
 
 }

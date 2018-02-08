@@ -10,8 +10,10 @@ object Main extends App {
 
   val parser = new Parser(code)
   val node: Node = parser.parse(0)
+
   val generator = new Generator
-  println(generator.generate(node))
+  val exprNode = generator.generate(node)
+  println(exprNode.expr.eval())
 }
 
 
