@@ -3,7 +3,7 @@
 
 (define true #t)
 (define false #f)
-(define myApply-in-underlying-scheme apply)
+(define apply-in-underlying-scheme apply)
 
 ;;;;; 4.1.1 ;;;;;
 
@@ -21,14 +21,14 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
-         (myApply (eval (operator exp) env)
+         (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
         (else
-          (error "Unknown expression tyle: EVAL" exp))))
+          (error "Unknown expression tyle: eval" exp))))
 
-(define (myApply procedure arguments)
+(define (myapply procedure arguments)
   (cond ((primitive-procedure? procedure)
-         (myApply-primitive-procedure procedure arguments))
+         (apply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
          (eval-sequence
            (procedure-body procedure)
@@ -37,7 +37,7 @@
              arguments
              (procedure-environment procedure))))
         (else
-          (error "Unknown procedure type: myApply" procedure))))
+          (error "Unknown procedure type: myapply" procedure))))
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -285,12 +285,9 @@
 (define (primitive-implementation proc) (cadr proc))
 
 (define primitive-procedures
-  (list (list 'mcar mcar)
-        (list 'mcdr mcdr)
-        (list 'mcons mcons)
+  (list (list 'cons mcons)
         (list 'car mcar)
         (list 'cdr mcdr)
-        (list 'cons mcons)
         (list 'null? null?)))
 
 (define (primitive-procedure-names)
@@ -300,13 +297,13 @@
   (map (lambda (proc) (list 'primitive (cadr proc)))
        primitive-procedures))
 
-(define (myApply-primitive-procedure proc args)
-  (myApply-in-underlying-scheme
+(define (apply-primitive-procedure proc args)
+  (apply-in-underlying-scheme
     (primitive-implementation proc) args))
 
-(define input-prompt ";;; M-Eval input:")
+(define input-prompt ";;; M-eval input:")
 
-(define output-prompt ";;; M-Eval value")
+(define output-prompt ";;; M-eval value")
 
 (define (driver-loop)
   (prompt-for-input input-prompt)
@@ -330,7 +327,7 @@
                    '<procedure-env>))
     (display object)))
 
-
 (define the-global-environemt (setup-environment))
 (driver-loop)
 
+(provide driver-loop)
