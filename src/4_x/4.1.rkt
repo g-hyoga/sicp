@@ -1,8 +1,21 @@
 #lang racket 
+(require "./interpreter.rkt")
 
-(define (list-of-values exps env)
+(define (no-operands? ops) (null? ops))
+
+(define (lr-list-of-values exps env)
   (if (no-operands? exps)
     '()
-    (cons (eval (first-operand exps) env)
-          (list-of-values (rest-operands exps) env))))
+    (let ((first (first-operand exps))
+          (rest (rest-operands exps)))
+      (cons (eval first env) 
+            (lr-list-of-values rest env)))))
+
+(define (rl-list-of-values exps env)
+  (if (no-operands? exps)
+    '()
+    (let ((first (first-operand exps))
+          (rest (rest-operands exps)))
+      (cons (eval first env) 
+            (rl-list-of-values rest env)))))
 

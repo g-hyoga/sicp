@@ -333,6 +333,6 @@
     (display object)))
 
 (define the-global-environemt (setup-environment))
-(driver-loop)
+;(driver-loop)
 
 (provide driver-loop)
