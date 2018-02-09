@@ -1,6 +1,10 @@
 #lang racket
 (require r5rs)
 
+(define true #t)
+(define false #f)
+(define myApply-in-underlying-scheme apply)
+
 ;;;;; 4.1.1 ;;;;;
 
 (define (eval exp env)
@@ -17,22 +21,23 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
-         (apply (eval (operator exp) env)
+         (myApply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
         (else
           (error "Unknown expression tyle: EVAL" exp))))
 
-(define (apply procedure arguments)
+(define (myApply procedure arguments)
   (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
+         (myApply-primitive-procedure procedure arguments))
         ((compound-procedure? procedure)
          (eval-sequence
            (procedure-body procedure)
            (extend-environment
+             (procedure-parameters procedure)
              arguments
              (procedure-environment procedure))))
         (else
-          (error "Unknown procedure type: APPLY" procedure))))
+          (error "Unknown procedure type: myApply" procedure))))
 
 (define (list-of-values exps env)
   (if (no-operands? exps)
@@ -280,9 +285,12 @@
 (define (primitive-implementation proc) (cadr proc))
 
 (define primitive-procedures
-  (list (list 'car car)
-        (list 'cdr cdr)
-        (list 'cons cons)
+  (list (list 'mcar mcar)
+        (list 'mcdr mcdr)
+        (list 'mcons mcons)
+        (list 'car mcar)
+        (list 'cdr mcdr)
+        (list 'cons mcons)
         (list 'null? null?)))
 
 (define (primitive-procedure-names)
@@ -292,10 +300,8 @@
   (map (lambda (proc) (list 'primitive (cadr proc)))
        primitive-procedures))
 
-(define apply-in-underlying-scheme apply)
-
-(define (apply-primitive-procedure proc args)
-  (apply-in-underlying-scheme
+(define (myApply-primitive-procedure proc args)
+  (myApply-in-underlying-scheme
     (primitive-implementation proc) args))
 
 (define input-prompt ";;; M-Eval input:")
@@ -307,7 +313,7 @@
   (let ((input (read)))
     (let ((output (eval input the-global-environemt)))
       (announce-output output-prompt)
-      (user-print output)))
+      (display output)))
   (driver-loop))
 
 (define (prompt-for-input string)
