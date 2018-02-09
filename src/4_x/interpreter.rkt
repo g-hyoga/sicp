@@ -288,7 +288,12 @@
   (list (list 'cons mcons)
         (list 'car mcar)
         (list 'cdr mcdr)
-        (list 'null? null?)))
+        (list 'null? null?)
+        (list '+ +)
+        (list '- -)
+        (list '* *)
+        (list '/ /)
+        (list '% remainder)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
