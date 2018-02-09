@@ -117,6 +117,8 @@
   (map (lambda (proc) (list 'primitive (cadr proc)))
        primitive-procedures))
 
+(define apply-in-underlying-scheme apply)
+
 (define (apply-primitive-procedure proc args)
   (apply-in-underlying-scheme
     (primitive-implementation proc) args))
@@ -146,6 +148,7 @@
                    (procedure-body object)
                    '<procedure-env>))
     (display object)))
+
 
 (define the-global-environemt (setup-environment))
 (driver-loop)
