@@ -32,7 +32,7 @@ class Parser(input: String) {
       }
       case head :: tail if (head == "(") => {
         seq = seq.drop(1)
-        val newNode =  go(new Node("", Seq()))
+        val newNode =  go(new Node("APPLICATION", Seq()))
         node.setNode(node.nodes :+ newNode)
         go(node)
       }
