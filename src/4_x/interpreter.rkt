@@ -339,3 +339,4 @@
 (driver-loop)
 
 (provide driver-loop)
+(provide eval)
