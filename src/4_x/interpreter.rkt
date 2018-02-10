@@ -293,7 +293,10 @@
         (list '- -)
         (list '* *)
         (list '/ /)
-        (list '% remainder)))
+        (list '% remainder)
+        (list '< <)
+        (list '> >)
+        (list '= =)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
@@ -333,6 +336,6 @@
     (display object)))
 
 (define the-global-environemt (setup-environment))
-;(driver-loop)
+(driver-loop)
 
 (provide driver-loop)
