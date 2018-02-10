@@ -20,6 +20,8 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((and? exp) (eval-and exp env))
+        ((or? exp) (eval-or exp env))
         ((application? exp)
          (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -335,8 +337,30 @@
                    '<procedure-env>))
     (display object)))
 
+;;;;; ex.4.4 ;;;;;
+
+(define (and? exp) (tagged-list? exp 'and))
+
+(define (or? exp) (tagged-list? exp 'or))
+
+(define (eval-and exp env)
+  (define (iter exp env)
+    (cond ((null? exp) true)
+          ((eval (car exp) env) (iter (cdr exp) env))
+          (else false)))
+  (iter (cdr exp) env))
+
+(define (eval-or exp env)
+  (define (iter exp env)
+    (cond ((null? exp) true)
+          ((eval (car exp) env) true)
+          (else (iter (cdr exp) env))))
+  (iter (cdr exp) env))
+
+
+
+
+
+;;;
 (define the-global-environemt (setup-environment))
 (driver-loop)
-
-(provide driver-loop)
-(provide eval)
