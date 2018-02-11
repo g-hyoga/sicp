@@ -173,14 +173,14 @@
 
 (define (cond-predicate clause) (car clause))
 
-(define (cond-recipent-clause? clause)
+(define (cond-recipient-clause? clause)
   (if (null? (cadr clause))
     false
-    (eq? (cond-recipent-symbol clause) '=>)))
+    (eq? (cond-recipient-symbol clause) '=>)))
 
-(define (cond-recipent-actions clause) (cddr clause))
+(define (cond-recipient-actions clause) (cddr clause))
 
-(define (cond-recipent-symbol clause) (cadr clause))
+(define (cond-recipient-symbol clause) (cadr clause))
 
 (define (cond-actions clause) (cdr clause))
 
@@ -195,15 +195,15 @@
              (if (null? rest)
                (sequence->exp (cond-actions first))
                (error "ELSE clause isn't last: COND->IF" clauses)))
-            ((cond-recipent-clause? first)
+            ((cond-recipient-clause? first)
              (display (map 
                           (lambda (action) (list action (cond-predicate first))) 
-                          (cond-recipent-actions first)))
+                          (cond-recipient-actions first)))
              (make-if (cond-predicate first)
                       (sequence->exp 
                         (map 
                           (lambda (action) (list action (cond-predicate first))) 
-                          (cond-recipent-actions first)))
+                          (cond-recipient-actions first)))
                       (expand-clauses rest)))
             (else (make-if (cond-predicate first)
                            (sequence->exp (cond-actions first))
