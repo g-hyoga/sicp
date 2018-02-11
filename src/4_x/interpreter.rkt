@@ -162,6 +162,8 @@
 
 (define (rest-operands ops) (cdr ops))
 
+;;;;; ex4.6 ;;;;;
+
 (define (cond? exp) (tagged-list? exp 'cond))
 
 (define (cond-clauses exp) (cdr exp))
@@ -171,6 +173,15 @@
 
 (define (cond-predicate clause) (car clause))
 
+(define (cond-recipent-clause? clause)
+  (if (null? (cadr clause))
+    false
+    (eq? (cond-recipent-symbol clause) '=>)))
+
+(define (cond-recipent-actions clause) (cddr clause))
+
+(define (cond-recipent-symbol clause) (cadr clause))
+
 (define (cond-actions clause) (cdr clause))
 
 (define (cond->if exp) (expand-clauses (cond-clauses exp)))
@@ -179,14 +190,24 @@
   (if (null? clauses)
     'false
     (let ((first (car clauses))
-           (rest (cdr clauses)))
-      (if (cond-else-clause? first)
-        (if (null? rest)
-          (sequence->exp (cond-actions first))
-          (error "ELSE clause isn't last: COND->IF" clauses))
-        (make-if (cond-predicate first)
-                 (sequence->exp (cond-actions first))
-                 (expand-clauses rest))))))
+          (rest (cdr clauses)))
+      (cond ((cond-else-clause? first)
+             (if (null? rest)
+               (sequence->exp (cond-actions first))
+               (error "ELSE clause isn't last: COND->IF" clauses)))
+            ((cond-recipent-clause? first)
+             (display (map 
+                          (lambda (action) (list action (cond-predicate first))) 
+                          (cond-recipent-actions first)))
+             (make-if (cond-predicate first)
+                      (sequence->exp 
+                        (map 
+                          (lambda (action) (list action (cond-predicate first))) 
+                          (cond-recipent-actions first)))
+                      (expand-clauses rest)))
+            (else (make-if (cond-predicate first)
+                           (sequence->exp (cond-actions first))
+                           (expand-clauses rest)))))))
 
 ;;;;; 4.1.3 ;;;;;
 
@@ -298,7 +319,9 @@
         (list '% remainder)
         (list '< <)
         (list '> >)
-        (list '= =)))
+        (list '= =)
+        (list 'string? string?)
+        (list 'number? number?)))
 
 (define (primitive-procedure-names)
   (map car primitive-procedures))
@@ -356,9 +379,6 @@
           ((eval (car exp) env) true)
           (else (iter (cdr exp) env))))
   (iter (cdr exp) env))
-
-
-
 
 
 ;;;
