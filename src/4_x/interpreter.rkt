@@ -20,6 +20,7 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((let? exp) (eval (let->conbination exp) env))
         ((and? exp) (eval-and exp env))
         ((or? exp) (eval-or exp env))
         ((application? exp)
@@ -162,7 +163,7 @@
 
 (define (rest-operands ops) (cdr ops))
 
-;;;;; ex4.6 ;;;;;
+;;;;; ex4.5 ;;;;;
 
 (define (cond? exp) (tagged-list? exp 'cond))
 
@@ -196,9 +197,6 @@
                (sequence->exp (cond-actions first))
                (error "ELSE clause isn't last: COND->IF" clauses)))
             ((cond-recipient-clause? first)
-             (display (map 
-                          (lambda (action) (list action (cond-predicate first))) 
-                          (cond-recipient-actions first)))
              (make-if (cond-predicate first)
                       (sequence->exp 
                         (map 
@@ -380,6 +378,25 @@
           (else (iter (cdr exp) env))))
   (iter (cdr exp) env))
 
+;;;;; ex4.6 ;;;;;
+
+(define (let? exp) (eq? (car exp) 'let))
+
+(define (let-variables exp)
+  (if (null? (cadr exp))
+    false
+    (cadr exp)))
+
+(define (let-body exp)
+  (if (null? (caddr exp))
+    false
+    (cddr exp)))
+
+(define (let->conbination exp)
+  (cons (make-lambda 
+          (map car (let-variables exp)) 
+          (let-body exp))
+        (map cadr (let-variables exp))))
 
 ;;;
 (define the-global-environemt (setup-environment))
