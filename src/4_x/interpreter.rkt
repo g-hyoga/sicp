@@ -20,6 +20,7 @@
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
+        ((let*? exp) (eval (let*->nested-lets exp) env))
         ((let? exp) (eval (let->conbination exp) env))
         ((and? exp) (eval-and exp env))
         ((or? exp) (eval-or exp env))
@@ -398,6 +399,25 @@
           (let-body exp))
         (map cadr (let-variables exp))))
 
-;;;
+;;;;; ex4.7 ;;;;;
+
+(define (let*? exp)
+  (eq? (car exp) 'let*))
+
+(define (make-let variables body)
+  (list 'let variables body))
+
+(define (let*->nested-lets exp)
+  (let ((body (let-body exp))
+        (variables (let-variables exp)))
+    (define (iter vars)
+      (if (null? (cdr vars))
+        (make-let (list (car vars))
+                  (car body))
+        (make-let (list (car vars))
+                  (iter (cdr vars)))))
+    (iter variables)))
+
+;;;;; loop ;;;;;
 (define the-global-environemt (setup-environment))
 (driver-loop)
