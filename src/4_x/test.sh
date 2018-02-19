@@ -21,3 +21,12 @@ run_test '(define hoge "string")' $void
 run_test "(+ 1 2 3)" 6
 
 run_test "(define hoge 1) hoge" 1
+
+run_test "
+(define (let-test x)
+  (let ((y 1))
+    (+ y x)))
+(let-test 2)
+" 3
+
+
