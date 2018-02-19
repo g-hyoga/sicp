@@ -425,7 +425,8 @@
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
-(define input (substring raw-input 0 (string-length raw-input)))
 
-(display (eval input the-global-environemt))
+(define input (open-input-string raw-input))
+
+(display (eval (read input) the-global-environemt))
 
