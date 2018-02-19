@@ -65,12 +65,14 @@
 (define (eval-assignment exp env)
   (set-variable-value! (assignment-variable exp)
                        (eval (assinment-value exp) env)
-                       env))
+                       env)
+  'ok)
 
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
                     (eval (definition-value exp) env)
-                    env))
+                    env)
+  'ok)
 
 ;;;;; 4.1.2 ;;;;;
 
@@ -423,8 +425,21 @@
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
+;(define raw-input "(define hoge 1) hoge")
 
 (define input (open-input-string raw-input))
 
-(display (eval (read input) the-global-environemt))
+(define (eval-iter)
+  (let ((in (read input)))
+    (if (not (eof-object? in))
+      (let ((val (eval in the-global-environemt)))
+        (if (not (eq? 'ok val))
+          (begin
+            (display val)
+            (display "\n")
+            (eval-iter))
+          (eval-iter)))
+      (display ""))))
+
+(eval-iter) 
 
