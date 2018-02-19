@@ -65,14 +65,12 @@
 (define (eval-assignment exp env)
   (set-variable-value! (assignment-variable exp)
                        (eval (assinment-value exp) env)
-                       env)
-  'ok)
+                       env))
 
 (define (eval-definition exp env)
   (define-variable! (definition-variable exp)
                     (eval (definition-value exp) env)
-                    env)
-  'ok)
+                    env))
 
 ;;;;; 4.1.2 ;;;;;
 
@@ -421,7 +419,7 @@
           (let-body exp))
         (map cadr (let-variables exp))))
 
-;;;;; loop ;;;;;
+;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
