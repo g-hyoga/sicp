@@ -1,5 +1,6 @@
 #lang racket
 (require r5rs)
+(require racket/cmdline)
 
 (define true #t)
 (define false #f)
@@ -393,12 +394,6 @@
     false
     (cddr exp)))
 
-(define (let->conbination exp)
-  (cons (make-lambda 
-          (map car (let-variables exp)) 
-          (let-body exp))
-        (map cadr (let-variables exp))))
-
 ;;;;; ex4.7 ;;;;;
 
 (define (let*? exp)
@@ -418,6 +413,19 @@
                   (iter (cdr vars)))))
     (iter variables)))
 
+;;;;; ex4.8 ;;;;;
+
+(define (let->conbination exp)
+  (cons (make-lambda 
+          (map car (let-variables exp)) 
+          (let-body exp))
+        (map cadr (let-variables exp))))
+
 ;;;;; loop ;;;;;
 (define the-global-environemt (setup-environment))
-(driver-loop)
+;(driver-loop)
+(define raw-input (vector-ref (current-command-line-arguments) 0))
+(define input (substring raw-input 0 (string-length raw-input)))
+
+(display (eval input the-global-environemt))
+
