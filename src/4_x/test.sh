@@ -16,6 +16,10 @@ function  run_test () {
   fi
 }
 
+run_test "(and (= 1 1) (= 1 2))" "#f"
+run_test "(and (= 1 1) (< 1 2))" "#t"
+run_test "(or (= 1 2) (= 1 1))" "#t"
+run_test "(or (> 1 2) (= 1 2))" "#f"
 run_test "(define hoge 1)" $void
 run_test '(define hoge "string")' $void
 run_test "(+ 1 2 3)" 6
@@ -29,4 +33,11 @@ run_test "
 (let-test 2)
 " 3
 
-
+run_test "
+(define (let*-test)
+  (let* ((x 1)
+         (y (+ x 1))
+         (z (+ x y)))
+    z))
+(let*-test)
+" 3

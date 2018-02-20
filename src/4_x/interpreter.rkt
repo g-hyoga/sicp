@@ -375,7 +375,7 @@
 
 (define (eval-or exp env)
   (define (iter exp env)
-    (cond ((null? exp) true)
+    (cond ((null? exp) false)
           ((eval (car exp) env) true)
           (else (iter (cdr exp) env))))
   (iter (cdr exp) env))
@@ -434,10 +434,9 @@
     (if (not (eof-object? in))
       (let ((val (eval in the-global-environemt)))
         (if (not (eq? 'ok val))
-          (begin
-            (display val)
-            (display "\n")
-            (eval-iter))
+          (begin (display val)
+                 (display "\n")
+                 (eval-iter))
           (eval-iter)))
       (display ""))))
 
