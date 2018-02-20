@@ -29,7 +29,7 @@
          (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
         (else
-          (error "Unknown expression tyle: eval" exp))))
+          (error "Unknown expression type: eval" exp))))
 
 (define (myapply procedure arguments)
   (cond ((primitive-procedure? procedure)
