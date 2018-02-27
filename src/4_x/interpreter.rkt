@@ -391,8 +391,8 @@
   (cadr exp))
 
 (define (let-body exp)
-  (if (null? (caddr exp))
-    false
+  (if (null? (cddr exp))
+    (error "let body is blanked: " exp)
     (cddr exp)))
 
 ;;;;; ex4.7 ;;;;;
