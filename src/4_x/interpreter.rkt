@@ -23,8 +23,8 @@
         ((cond? exp) (eval (cond->if exp) env))
         ((let*? exp) (eval (let*->nested-lets exp) env))
         ((let? exp) (eval (let->conbination exp) env))
-        ((and? exp) (eval-and (and-conjunct exp) env))
-        ((or? exp) (eval-or (or-conjunct exp) env))
+        ((and? exp) (eval-and (and-conjuncts exp) env))
+        ((or? exp) (eval-or (or-conjuncts exp) env))
         ((application? exp)
          (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -364,23 +364,23 @@
 
 (define (and? exp) (tagged-list? exp 'and))
 
-(define (and-conjunct exp) (cdr exp))
+(define (and-conjuncts exp) (cdr exp))
 
 (define (or? exp) (tagged-list? exp 'or))
 
-(define (or-conjunct exp) (cdr exp))
+(define (or-conjuncts exp) (cdr exp))
 
-(define (eval-and conjunctions env)
-  (cond ((null? (cdr conjunctions)) 
-         (eval (car conjunctions) env))
-        ((eval (car conjunctions) env)
-         (eval-and (cdr conjunctions) env))
+(define (eval-and conjunction env)
+  (cond ((null? (cdr conjunction)) 
+         (eval (car conjunction) env))
+        ((eval (car conjunction) env)
+         (eval-and (cdr conjunction) env))
         (else false)))
 
-(define (eval-or conjunctions env)
-  (cond ((null? conjunctions) false)
-        ((eval (car conjunctions) env) true)
-        (else (eval-or (cdr conjunctions) env))))
+(define (eval-or conjunction env)
+  (cond ((null? conjunction) false)
+        ((eval (car conjunction) env) true)
+        (else (eval-or (cdr conjunction) env))))
 
 ;;;;; ex4.6 ;;;;;
 
