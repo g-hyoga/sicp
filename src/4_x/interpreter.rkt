@@ -22,7 +22,7 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((let*? exp) (eval (let*->nested-lets exp) env))
-        ((let? exp) (eval (let->conbination exp) env))
+        ((let? exp) (eval (let->combination exp) env))
         ((and? exp) (eval-and (and-conjuncts exp) env))
         ((or? exp) (eval-or (or-conjuncts exp) env))
         ((application? exp)
@@ -199,12 +199,13 @@
                (sequence->exp (cond-actions first))
                (error "ELSE clause isn't last: COND->IF" clauses)))
             ((cond-recipient-clause? first)
-             (make-if (cond-predicate first)
-                      (sequence->exp 
-                        (map 
-                          (lambda (action) (list action (cond-predicate first))) 
-                          (cond-recipient-actions first)))
-                      (expand-clauses rest)))
+             (make-let (list (list 'tmp (cond-predicate first)))
+                       (make-if 'tmp 
+                                (sequence->exp 
+                                  (map 
+                                    (lambda (action) (list action 'tmp)) 
+                                    (cond-recipient-actions first)))
+                                (expand-clauses rest))))
             (else (make-if (cond-predicate first)
                            (sequence->exp (cond-actions first))
                            (expand-clauses rest)))))))
@@ -386,15 +387,11 @@
 
 (define (let? exp) (eq? (car exp) 'let))
 
-(define (let-variables exp)
-  (if (null? (cadr exp))
-    false
-    (cadr exp)))
+(define (let-bindings exp)
+  (cadr exp))
 
 (define (let-body exp)
-  (if (null? (caddr exp))
-    false
-    (cddr exp)))
+  (cddr exp))
 
 ;;;;; ex4.7 ;;;;;
 
@@ -403,10 +400,9 @@
 
 (define (make-let variables body)
   (list 'let variables body))
-
 (define (let*->nested-lets exp)
   (let ((body (let-body exp))
-        (variables (let-variables exp)))
+        (variables (let-bindings exp)))
     (define (iter vars)
       (if (null? (cdr vars))
         (make-let (list (car vars))
@@ -417,11 +413,11 @@
 
 ;;;;; ex4.8 ;;;;;
 
-(define (let->conbination exp)
+(define (let->combination exp)
   (cons (make-lambda 
-          (map car (let-variables exp)) 
+          (map car (let-bindings exp)) 
           (let-body exp))
-        (map cadr (let-variables exp))))
+        (map cadr (let-bindings exp))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
