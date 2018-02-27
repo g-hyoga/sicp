@@ -16,23 +16,16 @@ function  run_test () {
   fi
 }
 
-run_test "(and (= 1 1) (= 1 2))" "#f"
-run_test "(and (= 1 1) (< 1 2))" "#t"
-run_test '(and (= 1 1) (< 1 2) "hoge")' "hoge"
-run_test "(or (= 1 2) (= 1 1))" "#t"
-run_test "(or (> 1 2) (= 1 2))" "#f"
-run_test "(define hoge 1)" $void
-run_test '(define hoge "string")' $void
-run_test "(+ 1 2 3)" 6
-
-run_test "(define hoge 1) hoge" 1
-
 run_test "
-(define (let-test x)
-  (let ((y 1))
-    (+ y x)))
-(let-test 2)
-" 3
+(define (fib n)
+  (let fib-iter ((a 1)
+                 (b 0)
+                 (count n))
+    (if (= n 0)
+      b
+      (fib-iter (+ a b) a (- count 1)))))
+(fib 5)
+" 5
 
 run_test "
 (define (let*-test)
@@ -42,3 +35,24 @@ run_test "
     z))
 (let*-test)
 " 3
+
+run_test "
+(define (let-test x)
+  (let ((y 1))
+    (+ y x)))
+(let-test 2)
+" 3
+
+run_test "(define hoge 1) hoge" 1
+
+run_test "(and (= 1 1) (= 1 2))" "#f"
+run_test "(and (= 1 1) (< 1 2))" "#t"
+run_test '(and (= 1 1) (< 1 2) "hoge")' "hoge"
+run_test "(or (= 1 2) (= 1 1))" "#t"
+run_test "(or (> 1 2) (= 1 2))" "#f"
+run_test "(define hoge 1)" $void
+run_test '(define hoge "string")' $void
+run_test "(+ 1 2 3)" 6
+
+
+
