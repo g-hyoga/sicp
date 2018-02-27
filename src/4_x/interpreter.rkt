@@ -391,7 +391,9 @@
   (cadr exp))
 
 (define (let-body exp)
-  (cddr exp))
+  (if (null? (caddr exp))
+    false
+    (cddr exp)))
 
 ;;;;; ex4.7 ;;;;;
 
