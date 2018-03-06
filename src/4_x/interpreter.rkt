@@ -399,7 +399,10 @@
   (eq? (car exp) 'let*))
 
 (define (make-let variables body)
-  (list 'let variables body))
+  (if (null? body)
+    (error "let-body is null")
+    (list 'let variables body)))
+
 (define (let*->nested-lets exp)
   (let ((body (let-body exp))
         (variables (let-bindings exp)))
