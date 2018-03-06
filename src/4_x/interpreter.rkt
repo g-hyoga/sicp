@@ -371,17 +371,20 @@
 
 (define (or-conjuncts exp) (cdr exp))
 
-(define (eval-and conjunction env)
-  (cond ((null? (cdr conjunction)) 
-         (eval (car conjunction) env))
-        ((eval (car conjunction) env)
-         (eval-and (cdr conjunction) env))
+(define (eval-and conjuncts env)
+  (cond ((null? conjuncts) false)
+        ((null? (cdr conjuncts)) 
+         (eval (car conjuncts) env))
+        ((eval (car conjuncts) env)
+         (eval-and (cdr conjuncts) env))
         (else false)))
 
-(define (eval-or conjunction env)
-  (cond ((null? conjunction) false)
-        ((eval (car conjunction) env) true)
-        (else (eval-or (cdr conjunction) env))))
+(define (eval-or disconjuncts env)
+  (if (null? disconjuncts)
+    false
+    (let ((evaled-val (eval (car disconjuncts) env)))
+      (cond (evaled-val evaled-val)
+            (else (eval-or (cdr disconjuncts) env))))))
 
 ;;;;; ex4.6 ;;;;;
 

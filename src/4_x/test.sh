@@ -25,6 +25,7 @@ run_test "(and (= 1 1) (< 1 2))" "#t"
 run_test '(and (= 1 1) (< 1 2) "hoge")' "hoge"
 run_test "(or (= 1 2) (= 1 1))" "#t"
 run_test "(or (> 1 2) (= 1 2))" "#f"
+run_test "(or 1 (= 1 2))" 1
 run_test "(define hoge 1)" $void
 run_test '(define hoge "string")' $void
 run_test "(+ 1 2 3)" 6
