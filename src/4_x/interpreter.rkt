@@ -22,9 +22,9 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((let*? exp) (eval (let*->nested-lets exp) env))
-        ((let? exp) (eval (let->conbination exp) env))
-        ((and? exp) (eval-and (and-conjunct exp) env))
-        ((or? exp) (eval-or (or-conjunct exp) env))
+        ((let? exp) (eval (let->combination exp) env))
+        ((and? exp) (eval-and (and-conjuncts exp) env))
+        ((or? exp) (eval-or (or-conjuncts exp) env))
         ((application? exp)
          (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -199,12 +199,13 @@
                (sequence->exp (cond-actions first))
                (error "ELSE clause isn't last: COND->IF" clauses)))
             ((cond-recipient-clause? first)
-             (make-if (cond-predicate first)
-                      (sequence->exp 
-                        (map 
-                          (lambda (action) (list action (cond-predicate first))) 
-                          (cond-recipient-actions first)))
-                      (expand-clauses rest)))
+             (make-let (list (list 'tmp (cond-predicate first)))
+                       (make-if 'tmp 
+                                (sequence->exp 
+                                  (map 
+                                    (lambda (action) (list action 'tmp)) 
+                                    (cond-recipient-actions first)))
+                                (expand-clauses rest))))
             (else (make-if (cond-predicate first)
                            (sequence->exp (cond-actions first))
                            (expand-clauses rest)))))))
@@ -364,37 +365,33 @@
 
 (define (and? exp) (tagged-list? exp 'and))
 
-(define (and-conjunct exp) (cdr exp))
+(define (and-conjuncts exp) (cdr exp))
 
 (define (or? exp) (tagged-list? exp 'or))
 
-(define (or-conjunct exp) (cdr exp))
+(define (or-conjuncts exp) (cdr exp))
 
-(define (eval-and conjunctions env)
-  (cond ((null? (cdr conjunctions)) 
-         (eval (car conjunctions) env))
-        ((eval (car conjunctions) env)
-         (eval-and (cdr conjunctions) env))
+(define (eval-and conjunction env)
+  (cond ((null? (cdr conjunction)) 
+         (eval (car conjunction) env))
+        ((eval (car conjunction) env)
+         (eval-and (cdr conjunction) env))
         (else false)))
 
-(define (eval-or conjunctions env)
-  (cond ((null? conjunctions) false)
-        ((eval (car conjunctions) env) true)
-        (else (eval-or (cdr conjunctions) env))))
+(define (eval-or conjunction env)
+  (cond ((null? conjunction) false)
+        ((eval (car conjunction) env) true)
+        (else (eval-or (cdr conjunction) env))))
 
 ;;;;; ex4.6 ;;;;;
 
 (define (let? exp) (eq? (car exp) 'let))
 
-(define (let-variables exp)
-  (if (null? (cadr exp))
-    false
-    (cadr exp)))
+(define (let-bindings exp)
+  (cadr exp))
 
 (define (let-body exp)
-  (if (null? (caddr exp))
-    false
-    (cddr exp)))
+  (cddr exp))
 
 ;;;;; ex4.7 ;;;;;
 
@@ -402,11 +399,13 @@
   (eq? (car exp) 'let*))
 
 (define (make-let variables body)
-  (list 'let variables body))
+  (if (null? body)
+    (error "let-body is null")
+    (list 'let variables body)))
 
 (define (let*->nested-lets exp)
   (let ((body (let-body exp))
-        (variables (let-variables exp)))
+        (variables (let-bindings exp)))
     (define (iter vars)
       (if (null? (cdr vars))
         (make-let (list (car vars))

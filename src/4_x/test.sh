@@ -45,6 +45,10 @@ run_test "
 
 run_test "(define hoge 1) hoge" 1
 
+run_test "
+(cond (1 => (lambda (x) (+ 1 x)))
+      (else false))" 2
+
 run_test "(and (= 1 1) (= 1 2))" "#f"
 run_test "(and (= 1 1) (< 1 2))" "#t"
 run_test '(and (= 1 1) (< 1 2) "hoge")' "hoge"
