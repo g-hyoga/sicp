@@ -17,6 +17,35 @@ function  run_test () {
 }
 
 run_test "
+(define (fib n)
+  (let fib-iter ((a 1)
+                 (b 0)
+                 (count n))
+    (if (= count 0)
+      b
+      (fib-iter (+ a b) a (- count 1)))))
+(fib 5)
+" 5
+
+run_test "
+(define (let*-test)
+  (let* ((x 1)
+         (y (+ x 1))
+         (z (+ x y)))
+    z))
+(let*-test)
+" 3
+
+run_test "
+(define (let-test x)
+  (let ((y 1))
+    (+ y x)))
+(let-test 2)
+" 3
+
+run_test "(define hoge 1) hoge" 1
+
+run_test "
 (cond (1 => (lambda (x) (+ 1 x)))
       (else false))" 2
 
@@ -30,20 +59,5 @@ run_test "(define hoge 1)" $void
 run_test '(define hoge "string")' $void
 run_test "(+ 1 2 3)" 6
 
-run_test "(define hoge 1) hoge" 1
 
-run_test "
-(define (let-test x)
-  (let ((y 1))
-    (+ y x)))
-(let-test 2)
-" 3
 
-run_test "
-(define (let*-test)
-  (let* ((x 1)
-         (y (+ x 1))
-         (z (+ x y)))
-    z))
-(let*-test)
-" 3

@@ -419,17 +419,61 @@
 
 ;;;;; ex4.8 ;;;;;
 
+; (let <var> <binding> <body>)
+; it is syntax suger
+; ((lambda (<binding-variables>) 
+;    (define (<var> <binding-variables>) <body>) 
+;    (<var> <binding-variables>)) <binding-values>)
+
+(define (make-definition var exp)
+  (list 'define var exp))
+
+(define (name-let? exp)
+  (not (null? (name-let-body exp))))
+
+(define (name-let-variable exp) (cadr exp))
+
+(define (name-let-binding exp) (caddr exp))
+
+(define (name-let-binding-vars exp)
+  (map car (name-let-binding exp)))
+
+(define (name-let-binding-vals exp)
+  (map cadr (name-let-binding exp)))
+
+(define (name-let-body exp) (cdddr exp))
+
+(define (let->name-let exp)
+  (cons (make-lambda
+          (name-let-binding-vars exp)
+          (list (make-begin
+                  (list (make-definition 
+                          (cons (name-let-variable exp)
+                                (name-let-binding-vars exp))
+                          (make-begin (name-let-body exp)))
+                        (cons (name-let-variable exp) 
+                              (name-let-binding-vars exp))))))
+        (name-let-binding-vals exp)))
+
 (define (let->combination exp)
-  (cons (make-lambda 
-          (map car (let-bindings exp)) 
-          (let-body exp))
-        (map cadr (let-bindings exp))))
+  (cond ((name-let? exp) (let->name-let exp))
+        (else (cons (make-lambda 
+                      (map car (let-bindings exp)) 
+                (let-body exp))
+              (map cadr (let-bindings exp))))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
-;(define raw-input "(define hoge 1) hoge")
+;(define raw-input "(define (fib n)
+;  (let fib-iter ((a 1)
+;                 (b 0)
+;                 (count n))
+;    (if (= count 0)
+;      b
+;      (fib-iter (+ a b) a (- count 1)))))
+;(fib 5)")
 
 (define input (open-input-string raw-input))
 
