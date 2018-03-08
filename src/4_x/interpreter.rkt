@@ -418,18 +418,9 @@
 
 ; (let <var> <binding> <body>)
 ; it is syntax suger
-; (lambda () 
+; ((lambda (<binding-variables>) 
 ;    (define (<var> <binding-variables>) <body>) 
-;    (<var> <binding-values>))
-
-(define (fib n)
-  ((lambda (a b count) 
-     (begin (define (fib-iter a b count)
-              (if (= count 0)
-                b
-                (fib-iter (+ a b) a (- count 1))))
-            (fib-iter a b count)))
-   1 0 n))
+;    (<var> <binding-variables>)) <binding-values>)
 
 (define (make-definition var exp)
   (list 'define var exp))
@@ -441,35 +432,35 @@
 
 (define (name-let-binding exp) (caddr exp))
 
-(define (name-let-body exp) (cadddr exp))
+(define (name-let-body exp) (cdddr exp))
 
-(define (let->conbination exp)
+(define (let->combination exp)
   (cond ((name-let? exp)
          (cons (make-lambda
                  (map car (name-let-binding exp))
                  (list (make-begin
                          (list (make-definition 
                                  (cons (name-let-variable exp) (map car (name-let-binding exp)))
-                                 (name-let-body exp))
+                                 (make-begin (name-let-body exp)))
                                (cons (name-let-variable exp) (map car (name-let-binding exp)))))))
                (map cadr (name-let-binding exp))))
         (else (cons (make-lambda 
-                      (map car (let-variables exp)) 
-                      (let-body exp))
-                    (map cadr (let-variables exp))))))
+                      (map car (let-bindings exp)) 
+                (let-body exp))
+              (map cadr (let-bindings exp))))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
-#;(define raw-input "(define (fib n)
-  (let fib-iter ((a 1)
-                 (b 0)
-                 (count n))
-    (if (= n 0)
-      b
-      (fib-iter (+ a b) a (- count 1)))))
-(fib 5)")
+;(define raw-input "(define (fib n)
+;  (let fib-iter ((a 1)
+;                 (b 0)
+;                 (count n))
+;    (if (= count 0)
+;      b
+;      (fib-iter (+ a b) a (- count 1)))))
+;(fib 5)")
 
 (define input (open-input-string raw-input))
 
