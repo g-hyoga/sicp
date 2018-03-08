@@ -16,6 +16,23 @@ function  run_test () {
   fi
 }
 
+function error_test () {
+  racket interpreter.rkt "$1" >&/dev/null
+  if [ $? = 0 ]; then
+    echo
+    echo "Test Failed"
+    echo "This test must error, but it is runnable"
+    echo
+  else 
+    echo "Test Pass"
+  fi
+}
+
+error_test "
+(let fib-iter ((a 1)) a)
+a
+"
+
 run_test "
 (define (fib n)
   (let fib-iter ((a 1)
