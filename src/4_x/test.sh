@@ -30,7 +30,7 @@ function error_test () {
 
 error_test "
 (let fib-iter ((a 1)) a)
-a
+fib-iter
 "
 
 run_test "
