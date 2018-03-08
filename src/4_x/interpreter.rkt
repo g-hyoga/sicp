@@ -432,18 +432,28 @@
 
 (define (name-let-binding exp) (caddr exp))
 
+(define (name-let-binding-vars exp)
+  (map car (name-let-binding exp)))
+
+(define (name-let-binding-vals exp)
+  (map cadr (name-let-binding exp)))
+
 (define (name-let-body exp) (cdddr exp))
 
+(define (let->name-let exp)
+  (cons (make-lambda
+          (name-let-binding-vars exp)
+          (list (make-begin
+                  (list (make-definition 
+                          (cons (name-let-variable exp)
+                                (name-let-binding-vars exp))
+                          (make-begin (name-let-body exp)))
+                        (cons (name-let-variable exp) 
+                              (name-let-binding-vars exp))))))
+        (name-let-binding-vals exp)))
+
 (define (let->combination exp)
-  (cond ((name-let? exp)
-         (cons (make-lambda
-                 (map car (name-let-binding exp))
-                 (list (make-begin
-                         (list (make-definition 
-                                 (cons (name-let-variable exp) (map car (name-let-binding exp)))
-                                 (make-begin (name-let-body exp)))
-                               (cons (name-let-variable exp) (map car (name-let-binding exp)))))))
-               (map cadr (name-let-binding exp))))
+  (cond ((name-let? exp) (let->name-let exp))
         (else (cons (make-lambda 
                       (map car (let-bindings exp)) 
                 (let-body exp))
