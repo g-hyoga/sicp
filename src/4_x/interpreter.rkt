@@ -6,6 +6,38 @@
 (define false #f)
 (define apply-in-underlying-scheme apply)
 
+(define (err-handler proc seq err-message)
+  (if (null? seq)
+    (error err-message seq)
+    (proc seq)))
+
+(define (car-handler seq err-message)
+  (err-handler car seq err-message))
+
+(define (caadr-handler seq err-message)
+  (err-handler caadr seq err-message))
+
+(define (cadr-handler seq err-message)
+  (err-handler cadr seq err-message))
+
+(define (caddr-handler seq err-message)
+  (err-handler caddr seq err-message))
+
+(define (cadddr-handler seq err-message)
+  (err-handler cadddr seq err-message))
+
+(define (cdadr-handler seq err-message)
+  (err-handler cdadr seq err-message))
+
+(define (cdr-handler seq err-message)
+  (err-handler cdr seq err-message))
+
+(define (cddr-handler seq err-message)
+  (err-handler cddr seq err-message))
+
+(define (cdddr-handler seq err-message)
+  (err-handler cdddr seq err-message))
+
 ;;;;; 4.1.1 ;;;;;
 
 (define (eval exp env)
@@ -91,46 +123,52 @@
     false))
 
 (define (text-of-quotation exp)
-  (cadr exp))
+  (cadr-handler exp "TEXT_Of_QUOTATION exp is null" exp))
 
 (define (assignment? exp) (tagged-list? exp 'set!))
 
-(define (assignment-variable exp) (cadr exp))
+(define (assignment-variable exp)
+  (cadr-handler exp "ASSGNMENT_VARIABLE exp is null"))
 
-(define (assinment-value exp) (caddr exp))
+(define (assinment-value exp) 
+  (caddr-handler exp "ASSIGNMENT_VALUE exp is null"))
 
 (define (definition? exp) (tagged-list? exp 'define))
 
 (define (definition-variable exp)
   (if (symbol? (cadr exp))
-    (cadr exp)
-    (caadr exp)))
+    (cadr-handler exp "DEFINITION_VARIABLE exp is null")
+    (caadr-handler exp "DEFINITION_VARIABLE exp is null")))
 
 (define (definition-value exp)
-  (if (symbol? (cadr exp))
-    (caddr exp)
-    (make-lambda (cdadr exp)
-                 (cddr exp))))
+  (if (symbol? (cadr-handler exp "DEFINITION_VALUE exp is null"))
+    (caddr-handler exp "DEFINITION_VALUE exp is null")
+    (make-lambda (cdadr-handler exp "DEFINITION_VALUE exp is null")
+                 (cddr-handler exp "DEFINITION_VALUE exp is null"))))
 
 (define (lambda? exp)
   (tagged-list? exp 'lambda))
 
-(define (lambda-parameters exp) (cadr exp))
+(define (lambda-parameters exp) 
+  (cadr-handler exp "LAMBDA_PARAMETERS exp is null"))
 
-(define (lambda-body exp) (cddr exp))
+(define (lambda-body exp) 
+  (cddr-handler exp "LAMBDA_BODY exp is null"))
 
 (define (make-lambda parameters body)
   (cons 'lambda (cons parameters body)))
 
 (define (if? exp) (tagged-list? exp 'if))
 
-(define (if-predicate exp) (cadr exp))
+(define (if-predicate exp)
+  (cadr-handler exp "IF_PREDICATE exp is null"))
 
-(define (if-consequent exp) (caddr exp))
+(define (if-consequent exp)
+  (caddr-handler exp "IF_CONSEQUENT exp is null"))
 
 (define (if-alternative exp)
   (if (not (null? (cdddr exp)))
-    (cadddr exp)
+    (cadddr-handler exp "IF_ALTERNATIVE exp is null")
     'false))
 
 (define (make-if predicate consequent alternative)
@@ -138,13 +176,13 @@
 
 (define (begin? exp) (tagged-list? exp 'begin))
 
-(define (begin-actions exp) (cdr exp))
+(define (begin-actions exp) (cdr-handler exp "BEGIN-ACTIONS exp is null"))
 
 (define (last-exp? seq) (null? (cdr seq)))
 
-(define (first-exp seq) (car seq))
+(define (first-exp seq) (car-handler seq "FIRST-EXP seq is null"))
 
-(define (rest-exps seq) (cdr seq))
+(define (rest-exps seq) (cdr-handler seq "REST-EXPS seq is null"))
 
 (define (sequence->exp seq)
   (cond ((null? seq) seq)
@@ -155,37 +193,44 @@
 
 (define (application? exp) (pair? exp))
 
-(define (operator exp) (car exp))
+(define (operator exp) (car-handler exp "OPERATER exp is null"))
 
-(define (operands exp) (cdr exp))
+(define (operands exp) (cdr-handler exp "OPERANDS exp is null"))
 
 (define (no-operands? ops) (null? ops))
 
-(define (first-operand ops) (car ops))
+(define (first-operand ops)
+  (car-handler ops "FIRST-OPERAND ops is null"))
 
-(define (rest-operands ops) (cdr ops))
+(define (rest-operands ops) 
+  (cdr-handler ops "FIRST-OPERAND ops is null"))
 
 ;;;;; ex4.5 ;;;;;
 
 (define (cond? exp) (tagged-list? exp 'cond))
 
-(define (cond-clauses exp) (cdr exp))
+(define (cond-clauses exp) 
+  (cdr-handler exp "COND_CLAUSES exp is null"))
 
 (define (cond-else-clause? clause)
   (eq? (cond-predicate clause) 'else))
 
-(define (cond-predicate clause) (car clause))
+(define (cond-predicate clause) 
+  (car-handler clause "COND_PREDICATE clause is null"))
 
 (define (cond-recipient-clause? clause)
   (if (null? (cadr clause))
     false
     (eq? (cond-recipient-symbol clause) '=>)))
 
-(define (cond-recipient-actions clause) (cddr clause))
+(define (cond-recipient-actions clause)
+  (cddr-handler clause "COND_RECIPIENT_ACTIONS clause is null"))
 
-(define (cond-recipient-symbol clause) (cadr clause))
+(define (cond-recipient-symbol clause) 
+  (cadr-handler clause "COND_PREDICATE_SYMBOL clause is null"))
 
-(define (cond-actions clause) (cdr clause))
+(define (cond-actions clause)
+  (cdr-handler clause "COND_ACTIONS clause is null"))
 
 (define (cond->if exp) (expand-clauses (cond-clauses exp)))
 
@@ -221,30 +266,38 @@
 (define (compound-procedure? p)
   (tagged-list? p 'procedure))
 
-(define (procedure-parameters p) (cadr p))
+(define (procedure-parameters p)
+  (cadr-handler p "PROCEDURE_PARAMETERS p is null"))
 
-(define (procedure-body p) (caddr p))
+(define (procedure-body p) 
+  (caddr-handler p "PROCEDURE_BODY p is null"))
 
-(define (procedure-environment p) (cadddr p))
+(define (procedure-environment p) 
+  (cadddr-handler p "PROCEDURE_ENVIRONMENT p is null"))
 
-(define (enclosing-environment env) (cdr env))
+(define (enclosing-environment env)
+  (cdr-handler env "ENCLOSING_ENVIRONMENT env is null"))
 
-(define (first-frame env) (car env))
+(define (first-frame env)
+  (car-handler env "FIRST_FRAME env is null"))
 
-(define (rest-frame env) (cdr env))
+(define (rest-frames env)
+  (cdr-handler env "REST_FRAMES env is null"))
 
 (define the-empty-environment '())
 
 (define (make-frame variables values)
   (cons variables values))
 
-(define (frame-variables frame) (car frame))
+(define (frame-variables frame)
+  (car-handler frame "FRMAE_VARIABLES frame is null"))
 
-(define (frame-values frame) (cdr frame))
+(define (frame-values frame)
+  (cdr-handler frame "FRAME_VALUES is null"))
 
 (define (add-binding-to-frame! var val frame)
-  (set-car! frame (cons var (car frame)))
-  (set-cdr! frame (cons val (cdr frame))))
+  (set-car! frame (cons var (first-frame frame)))
+  (set-cdr! frame (cons val (rest-frames frame))))
 
 (define (extend-environment vars vals base-env)
   (if (= (length vars) (length vals))
@@ -267,7 +320,8 @@
 (define (primitive-procedure? proc)
   (tagged-list? proc 'primitive))
 
-(define (primitive-implementation proc) (cadr proc))
+(define (primitive-implementation proc) 
+  (cadr-handler proc "PRIMITIVE_IMPLEMENTION proc is null"))
 
 (define primitive-procedures
   (list (list 'cons mcons)
@@ -286,10 +340,12 @@
         (list 'number? number?)))
 
 (define (primitive-procedure-names)
-  (map car primitive-procedures))
+  (map (lambda (x) (car-handler x "PRIMITIVE_PROCEDURE_NAME")) 
+       primitive-procedures))
 
 (define (primitive-procedure-objects)
-  (map (lambda (proc) (list 'primitive (cadr proc)))
+  (map (lambda (proc) 
+         (list 'primitive (cadr-handler proc "PRIMITIVE_PROCEDURE_OBJECTS")))
        primitive-procedures))
 
 (define (apply-primitive-procedure proc args)
@@ -326,11 +382,13 @@
 
 (define (and? exp) (tagged-list? exp 'and))
 
-(define (and-conjuncts exp) (cdr exp))
+(define (and-conjuncts exp) 
+  (cdr-handler exp "AND_CONJUNCTS"))
 
 (define (or? exp) (tagged-list? exp 'or))
 
-(define (or-conjuncts exp) (cdr exp))
+(define (or-conjuncts exp)
+  (cdr-handler exp "OR_CONJUNCTS"))
 
 (define (eval-and conjuncts env)
   (cond ((null? conjuncts) false)
@@ -352,10 +410,10 @@
 (define (let? exp) (eq? (car exp) 'let))
 
 (define (let-bindings exp)
-  (cadr exp))
+  (cadr-handler exp "LET_BINDING"))
 
 (define (let-body exp)
-  (cddr exp))
+  (cddr-handler exp "LET_BODY"))
 
 ;;;;; ex4.7 ;;;;;
 
@@ -392,17 +450,22 @@
 (define (name-let? exp)
   (not (null? (name-let-body exp))))
 
-(define (name-let-variable exp) (cadr exp))
+(define (name-let-variable exp) 
+  (cadr-handler exp "NAME_LET_VARIABLE"))
 
-(define (name-let-binding exp) (caddr exp))
+(define (name-let-binding exp)
+  (caddr-handler exp "NAME_LET_BINDING"))
 
 (define (name-let-binding-vars exp)
-  (map car (name-let-binding exp)))
+  (map (lambda (x) (car-handler x "NAME_LET_BINDING_VARS"))
+       (name-let-binding exp)))
 
 (define (name-let-binding-vals exp)
-  (map cadr (name-let-binding exp)))
+  (map (lambda (x) (cadr-handler x "NAME_LET_BINDING_VALS"))
+       (name-let-binding exp)))
 
-(define (name-let-body exp) (cdddr exp))
+(define (name-let-body exp) 
+  (cdddr-handler exp "NAME_LET_BODY"))
 
 (define (let->name-let exp)
   (cons (make-lambda
@@ -423,31 +486,47 @@
                 (let-body exp))
               (map cadr (let-bindings exp))))))
 
-;;;;; ex4.8 ;;;;;
-
-(define (env-loop target env empty-message scan-proc)
-  (if (eq? env the-empty-environment)
-    (error empty-message target)
-    (let ((frame (first-frame env)))
-      (scan target frame env scan-proc))))
-
-(define (scan target frame env eq-proc)
-  (let ((vars (frame-variables frame))
-        (vals (frame-values frame)))
-    (cond ((null? vars)
-           (env-loop (enclosing-environment env)))
-          ((eq? target (car vars)) (eq-proc vals))
-          (else (scan target (rest-frame frame) env eq-proc)))))
+;;;;; ex4.12 ;;;;;
 
 (define (lookup-variable-value var env)
-  (env-loop var env "Unbound variables" car))
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars)) (car vals))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+      (error "Unbound variables" var)
+      (let ((frame (first-frame env)))
+        (scan (frame-variables frame)
+              (frame-values frame)))))
+  (env-loop env))
 
 (define (set-variable-value! var val env)
-  (env-loop var env "Unbound variables: SET!" set-car!))
-
+  (define (env-loop env)
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (env-loop (enclosing-environment env)))
+            ((eq? var (car vars)) (set-car! vals val))
+            (else (scan (cdr vars) (cdr vals)))))
+    (if (eq? env the-empty-environment)
+      (error "Unbound variables: SET!" var)
+      (let ((frame (first-frame env)))
+        (scan (frame-variables frame)
+              (frame-values frame)))))
+  (env-loop env))
+  
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
-    (scan var frame env (set-car! (frame-values frame) val))))
+    (define (scan vars vals)
+      (cond ((null? vars)
+             (add-binding-to-frame! var val frame))
+            ((eq? var (car vars))
+             (set-car! vals val))
+            (else (scan (cdr vars)
+                        (cdr vals)))))
+    (scan (frame-variables frame)
+          (frame-values frame))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
@@ -476,4 +555,3 @@
       (display ""))))
 
 (eval-iter) 
-
