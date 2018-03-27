@@ -231,6 +231,8 @@
 
 (define (first-frame env) (car env))
 
+(define (rest-frame env) (cdr env))
+
 (define the-empty-environment '())
 
 (define (make-frame variables values)
@@ -250,47 +252,6 @@
     (if (< (length vars) (length vals))
       (error "Too many argumants supplied" vars vals)
       (error "Too few arguments supplied" vars vals))))
-
-(define (lookup-variable-value var env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars)) (car vals))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-      (error "Unbound variables" var)
-      (let ((frame (first-frame env)))
-        (scan (frame-variables frame)
-              (frame-values frame)))))
-  (env-loop env))
-
-(define (set-variable-value! var val env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars)) (set-car! vals val))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-      (error "Unbound variables: SET!" var)
-      (let ((frame (first-frame env)))
-        (scan (frame-variables frame)
-              (frame-values frame)))))
-  (env-loop env))
-  
-
-(define (define-variable! var val env)
-  (let ((frame (first-frame env)))
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (add-binding-to-frame! var val frame))
-            ((eq? var (car vars))
-             (set-car! vals val))
-            (else (scan (cdr vars)
-                        (cdr vals)))))
-    (scan (frame-variables frame)
-          (frame-values frame))))
 
 ;;;;;; 4.1.4 ;;;;;
 
@@ -461,6 +422,32 @@
                       (map car (let-bindings exp)) 
                 (let-body exp))
               (map cadr (let-bindings exp))))))
+
+;;;;; ex4.8 ;;;;;
+
+(define (env-loop target env empty-message scan-proc)
+  (if (eq? env the-empty-environment)
+    (error empty-message target)
+    (let ((frame (first-frame env)))
+      (scan target frame env scan-proc))))
+
+(define (scan target frame env eq-proc)
+  (let ((vars (frame-variables frame))
+        (vals (frame-values frame)))
+    (cond ((null? vars)
+           (env-loop (enclosing-environment env)))
+          ((eq? target (car vars)) (eq-proc vals))
+          (else (scan target (rest-frame frame) env eq-proc)))))
+
+(define (lookup-variable-value var env)
+  (env-loop var env "Unbound variables" car))
+
+(define (set-variable-value! var val env)
+  (env-loop var env "Unbound variables: SET!" set-car!))
+
+(define (define-variable! var val env)
+  (let ((frame (first-frame env)))
+    (scan var frame env (set-car! (frame-values frame) val))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
