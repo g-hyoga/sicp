@@ -517,10 +517,10 @@
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
     (scan var
-                  (frame-variables frame)
-                  (frame-values frame)
-                  (lambda () (add-binding-to-frame! var val frame))
-                  set-car!)))
+          (frame-variables frame)
+          (frame-values frame)
+          (lambda () (add-binding-to-frame! var val frame))
+          set-car!)))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
