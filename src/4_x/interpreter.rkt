@@ -492,19 +492,21 @@
   (if (eq? env the-empty-environment)
     (error error-message target)
     (let ((frame (first-frame env)))
-      (curried-scan 
+      (scan 
         target
         (frame-variables frame)
         (frame-values frame)
-        env
-        eq-proc
-        error-message))))
+        (lambda () (env-loop 
+                     target 
+                     (enclosing-environment env) 
+                     eq-proc 
+                     error-message))
+        eq-proc))))
 
-(define (curried-scan target vars vals env eq-proc error-message)
-  (cond ((null? vars)
-         (env-loop target (enclosing-environment env) eq-proc error-message))
+(define (scan target vars vals null-proc eq-proc)
+  (cond ((null? vars) (null-proc))
         ((eq? target (car vars)) (eq-proc vals))
-        (else (curried-scan target (cdr vars) (cdr vals) env eq-proc error-message))))
+        (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
 
 (define (lookup-variable-value var env)
   (env-loop var env car "Unbound variables"))
@@ -514,15 +516,11 @@
   
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (add-binding-to-frame! var val frame))
-            ((eq? var (car vars))
-             (set-car! vals val))
-            (else (scan (cdr vars)
-                        (cdr vals)))))
-    (scan (frame-variables frame)
-          (frame-values frame))))
+    (scan var
+                  (frame-variables frame)
+                  (frame-values frame)
+                  (lambda () (add-binding-to-frame! var val frame))
+                  set-car!)))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
