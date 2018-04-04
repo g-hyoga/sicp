@@ -489,16 +489,22 @@
 ;;;;; ex4.12 ;;;;;
 
 (define (env-loop target env eq-proc error-message)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop target (enclosing-environment env) eq-proc error-message))
-            ((eq? target (car vars)) (eq-proc vals))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-      (error error-message target)
-      (let ((frame (first-frame env)))
-        (scan (frame-variables frame)
-              (frame-values frame)))))
+  (if (eq? env the-empty-environment)
+    (error error-message target)
+    (let ((frame (first-frame env)))
+      (curried-scan 
+        target
+        (frame-variables frame)
+        (frame-values frame)
+        env
+        eq-proc
+        error-message))))
+
+(define (curried-scan target vars vals env eq-proc error-message)
+  (cond ((null? vars)
+         (env-loop target (enclosing-environment env) eq-proc error-message))
+        ((eq? target (car vars)) (eq-proc vals))
+        (else (curried-scan target (cdr vars) (cdr vals) env eq-proc error-message))))
 
 (define (lookup-variable-value var env)
   (env-loop var env car "Unbound variables"))
