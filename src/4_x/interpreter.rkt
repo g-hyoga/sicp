@@ -491,22 +491,22 @@
 (define (env-loop target env eq-proc error-message)
   (if (eq? env the-empty-environment)
     (error error-message target)
-    (let ((frame (first-frame env)))
-      (scan 
-        target
-        (frame-variables frame)
-        (frame-values frame)
-        (lambda () (env-loop 
-                     target 
-                     (enclosing-environment env) 
-                     eq-proc 
-                     error-message))
-        eq-proc))))
+    (scan 
+      target
+      (first-frame env)
+      (lambda () (env-loop 
+                   target 
+                   (enclosing-environment env) 
+                   eq-proc 
+                   error-message))
+      eq-proc)))
 
-(define (scan target vars vals null-proc eq-proc)
-  (cond ((null? vars) (null-proc))
-        ((eq? target (car vars)) (eq-proc vals))
-        (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
+(define (scan target frame null-proc eq-proc)
+  (let ((vars (frame-variables frame))
+        (vals (frame-values frame)))
+    (cond ((null? vars) (null-proc))
+          ((eq? target (car vars)) (eq-proc vals))
+          (else (scan target (make-frame (cdr vars) (cdr vals)) null-proc eq-proc)))))
 
 (define (lookup-variable-value var env)
   (env-loop var env car "Unbound variables"))
@@ -517,8 +517,7 @@
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
     (scan var
-          (frame-variables frame)
-          (frame-values frame)
+          frame
           (lambda () (add-binding-to-frame! var val frame))
           set-car!)))
 
