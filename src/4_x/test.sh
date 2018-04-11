@@ -18,7 +18,7 @@ function run_test () {
     echo "actucal: $output"
     echo
 
-    if [ "$DEBUG_MODE" = "true" ]; then
+    if [ "$TEST_DEBUG_MODE" = "true" ]; then
       echo "STACK TRACE"
       INTERPRETER_DEBUG_MODE="true" racket interpreter.rkt "$1"
       echo 
