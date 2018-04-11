@@ -2,7 +2,7 @@
 
 void=$(racket interpreter.rkt "(define void 0)")
 
-function  run_test () {
+function run_test () {
   output=$(racket interpreter.rkt "$1")
   if [ "$output" != "$2" ]; then
     echo
@@ -11,6 +11,12 @@ function  run_test () {
     echo "expcted: $2"
     echo "actucal: $output"
     echo
+
+    if [ "$DEBUG_MODE" = "true" ]; then
+      echo "STACK TRACE"
+      INTERPRETER_DEBUG_MODE="true" racket interpreter.rkt "$1"
+      echo 
+    fi
   else 
     echo "Test Pass"
   fi

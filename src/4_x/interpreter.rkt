@@ -17,7 +17,7 @@
       (begin (display " ")
              (display (car args))
              (iter (cdr args)))))
-  (if (getenv "INTERPRETER_DEBUG_MODE")
+  (if (equal? (getenv "INTERPRETER_DEBUG_MODE") "true")
     (begin (display "[")
            (display command)
            (display "] ")
