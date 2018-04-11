@@ -3,8 +3,14 @@
 void=$(racket interpreter.rkt "(define void 0)")
 
 function run_test () {
-  output=$(racket interpreter.rkt "$1")
-  if [ "$output" != "$2" ]; then
+  output=$(racket interpreter.rkt "$1" >&/dev/null)
+  if [ ! $? = 0 ]; then
+    echo
+    echo "ERROR"
+    echo "Test Case: \"$1\", $2"
+    echo
+    racket interpreter.rkt
+  elif [ "$output" != "$2" ]; then
     echo
     echo "Test Failed"
     echo "Test Case: \"$1\", $2"
