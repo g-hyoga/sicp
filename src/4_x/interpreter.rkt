@@ -513,45 +513,39 @@
 
 ;;;;; ex4.12 ;;;;;
 
+(define (env-loop target env eq-proc error-message)
+  (if (eq? env the-empty-environment)
+    (error error-message target)
+    (let ((frame (first-frame env)))
+      (scan 
+        target
+        (frame-variables frame)
+        (frame-values frame)
+        (lambda () (env-loop 
+                     target 
+                     (enclosing-environment env) 
+                     eq-proc 
+                     error-message))
+        eq-proc))))
+
+(define (scan target vars vals null-proc eq-proc)
+  (cond ((null? vars) (null-proc))
+        ((eq? target (car vars)) (eq-proc vals))
+        (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
+
 (define (lookup-variable-value var env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars)) (car vals))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-      (error "Unbound variables" var)
-      (let ((frame (first-frame env)))
-        (scan (frame-variables frame)
-              (frame-values frame)))))
-  (env-loop env))
+  (env-loop var env car "Unbound variables"))
 
 (define (set-variable-value! var val env)
-  (define (env-loop env)
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (env-loop (enclosing-environment env)))
-            ((eq? var (car vars)) (set-car! vals val))
-            (else (scan (cdr vars) (cdr vals)))))
-    (if (eq? env the-empty-environment)
-      (error "Unbound variables: SET!" var)
-      (let ((frame (first-frame env)))
-        (scan (frame-variables frame)
-              (frame-values frame)))))
-  (env-loop env))
-
+  (env-loop var env set-car! "Unbound variables: SET!"))
+  
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
-    (define (scan vars vals)
-      (cond ((null? vars)
-             (add-binding-to-frame! var val frame))
-            ((eq? var (car vars))
-             (set-car! vals val))
-            (else (scan (cdr vars)
-                        (cdr vals)))))
-    (scan (frame-variables frame)
-          (frame-values frame))))
+    (scan var
+          (frame-variables frame)
+          (frame-values frame)
+          (lambda () (add-binding-to-frame! var val frame))
+          (lambda (vals) (set-car! vals val)))))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
