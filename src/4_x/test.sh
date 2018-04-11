@@ -28,6 +28,29 @@ function error_test () {
   fi
 }
 
+run_test "
+(if false 1 2)
+" 2
+
+run_test "
+(if true 1 2)
+" 1
+
+run_test "
+((lambda () (+ 1 1)))
+" 2
+
+run_test "
+(define x 'hoge')
+x
+" "hoge"
+
+run_test "
+(define x 1)
+(define x 2)
+x
+" 2
+
 error_test "
 (let fib-iter ((a 1)) a)
 fib-iter
