@@ -40,10 +40,10 @@ run_test "
 ((lambda () (+ 1 1)))
 " 2
 
-run_test "
-(define x 'hoge')
+run_test '
+(define x "hoge")
 x
-" "hoge"
+' "hoge"
 
 run_test "
 (define x 1)
