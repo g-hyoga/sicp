@@ -13,7 +13,7 @@ function run_test () {
     echo
 
     if [ "$TEST_DEBUG_MODE" = "true" ]; then
-      echo "STACK TRACE"
+      echo "TEST LOG"
       INTERPRETER_DEBUG_MODE="true" racket interpreter.rkt "$1"
       echo 
     fi
@@ -23,16 +23,28 @@ function run_test () {
 }
 
 function error_test () {
-  racket interpreter.rkt "$1" >&/dev/null
-  if [ $? = 0 ]; then
-    echo
+  racket interpreter.rkt "$1" > /dev/null 2> tmp
+  grep "$2" tmp > /dev/null
+  if [ $? != 0 ]; then
+    echo 
     echo "Test Failed"
-    echo "This test must error, but it is runnable"
+    echo "Error message in this test must include '$2'"
     echo
   else 
     echo "Test Pass"
   fi
+  rm tmp
 }
+
+error_test "
+hoge
+" "Unbound variables"
+
+error_test "
+(define x 123)
+(make-unbound! x)
+x
+" "Unbound variables"
 
 run_test "
 (if false 1 2)
@@ -60,7 +72,7 @@ x
 error_test "
 (let fib-iter ((a 1)) a)
 fib-iter
-"
+" "Unbound variables"
 
 run_test "
 (define (fib n)

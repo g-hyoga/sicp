@@ -81,6 +81,7 @@
         ((let? exp) (eval (let->combination exp) env))
         ((and? exp) (eval-and (and-conjuncts exp) env))
         ((or? exp) (eval-or (or-conjuncts exp) env))
+        ((unbound? exp) (eval-unbound exp env))
         ((application? exp)
          (myapply (eval (operator exp) env)
                 (list-of-values (operands exp) env)))
@@ -530,11 +531,11 @@
 
 (define (scan target vars vals null-proc eq-proc)
   (cond ((null? vars) (null-proc))
-        ((eq? target (car vars)) (eq-proc vals))
+        ((eq? target (car vars)) (eq-proc vars vals))
         (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
 
 (define (lookup-variable-value var env)
-  (env-loop var env car "Unbound variables"))
+  (env-loop var env (lambda (vars vals) (car vals)) "Unbound variables"))
 
 (define (set-variable-value! var val env)
   (env-loop var env set-car! "Unbound variables: SET!"))
@@ -545,7 +546,28 @@
           (frame-variables frame)
           (frame-values frame)
           (lambda () (add-binding-to-frame! var val frame))
-          (lambda (vals) (set-car! vals val)))))
+          (lambda (vars vals) (set-car! vals val)))))
+
+;;;;; ex4.13 ;;;;;
+
+(define (unbound? exp)
+  (tagged-list? exp 'make-unbound!))
+
+(define (unbound-variable exp)
+  (cadr-handler exp "UNBOUND_VARIABLE"))
+
+(define (make-unbound! var env)
+  (let ((frame (first-frame env)))
+    (scan var
+          (frame-variables frame)
+          (frame-values frame)
+          (lambda () (error "the variable has not defined yet" var))
+          (lambda (vars vals) (begin (set-car! vars (cddr vars))
+                                     (set-car! vals (cddr vals))
+                                     'ok)))))
+
+(define (eval-unbound exp env)
+  (make-unbound! (unbound-variable exp) env))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
