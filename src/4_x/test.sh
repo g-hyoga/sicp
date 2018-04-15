@@ -36,6 +36,13 @@ function error_test () {
   rm tmp
 }
 
+run_test "
+(lambda ()
+  (define x 1)
+  (define y 2)
+  (+ x y))
+" 3
+
 error_test "
 hoge
 " "Unbound variables"

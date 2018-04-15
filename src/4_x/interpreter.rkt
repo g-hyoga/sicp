@@ -287,7 +287,7 @@
 (define (false? x) (eq? x false))
 
 (define (make-procedure parameters body env)
-  (list 'procedure parameters body env))
+  (list 'procedure parameters (scan-out-defines body) env))
 
 (define (compound-procedure? p)
   (tagged-list? p 'procedure))
@@ -578,6 +578,29 @@
           (error "unassigned value" target)
           (car vals))))
     "Unbound variables"))
+
+(define (scan-out-defines l-body)
+  (define (scan-let-body l-body definitions bodies)
+    (cond ((null? l-body) (definition->let definitions bodies))
+          ((definition? (car l-body))
+           (scan-let-body (cdr l-body) 
+                          (cons (car l-body) definitions)
+                          bodies))
+          (else (scan-let-body (cdr l-body) 
+                               definitions
+                               (cons (car l-body) bodies)))))
+  (scan-let-body l-body '() '()))
+
+(define (definition->let definitions bodies)
+  (make-let (map (lambda (definition) (list (definition-variable definition) "*unassigned*"))
+                 definitions)
+            (append (map (lambda (definition)
+                           (make-assignment (definition-variable definition) (definition-value definition)))
+                         definitions)
+                    bodies)))
+
+(define (make-assignment variable value)
+  (list 'set! variable value))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
