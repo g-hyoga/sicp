@@ -117,5 +117,3 @@ run_test "(define hoge 1)" $void
 run_test '(define hoge "string")' $void
 run_test "(+ 1 2 3)" 6
 
-
-

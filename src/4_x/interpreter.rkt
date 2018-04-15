@@ -534,9 +534,6 @@
         ((eq? target (car vars)) (eq-proc vars vals))
         (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
 
-(define (lookup-variable-value var env)
-  (env-loop var env (lambda (vars vals) (car vals)) "Unbound variables"))
-
 (define (set-variable-value! var val env)
   (env-loop var env set-car! "Unbound variables: SET!"))
   
@@ -568,6 +565,19 @@
 
 (define (eval-unbound exp env)
   (make-unbound! (unbound-variable exp) env))
+
+;;;;; ex.4.16 ;;;;;
+
+(define (lookup-variable-value var env)
+  (env-loop 
+    var 
+    env 
+    (lambda (vars vals)
+      (let ((target (car vars)))
+        (if (eq? "*unassigned*" target)
+          (error "unassigned value" target)
+          (car vals))))
+    "Unbound variables"))
 
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
