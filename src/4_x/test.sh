@@ -1,5 +1,6 @@
 #!bin/bash
 
+INTERPRETER_DEBUG_MODE=false
 void=$(racket interpreter.rkt "(define void 0)")
 
 function run_test () {

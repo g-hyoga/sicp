@@ -449,7 +449,7 @@
 (define (make-let variables body)
   (if (null? body)
     (error "MAKE_LET")
-    (list 'let variables body)))
+    (cons (cons 'let variables) body)))
 
 (define (let*->nested-lets exp)
   (let ((body (let-body exp))
@@ -595,13 +595,14 @@
   (scan-let-body init-l-body '() '()))
 
 (define (definition->let definitions bodies)
-  (stack-trace "definition->let" definitions bodies)
-  (make-let (map (lambda (definition) (list (definition-variable definition) "*unassigned*"))
+  (define (val-iter defs)
+    (if (null? defs)
+      bodies
+      (cons (make-assignment (definition-variable (car defs)) (definition-value (car defs)))
+            (val-iter (cdr defs)))))
+  (make-let (map (lambda (def) (list (definition-variable def) "*unassigned*"))
                  definitions)
-            (append (map (lambda (definition)
-                           (make-assignment (definition-variable definition) (definition-value definition)))
-                         definitions)
-                    bodies)))
+            (val-iter definitions)))
 
 (define (make-assignment variable value)
   (list 'set! variable value))
