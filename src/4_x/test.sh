@@ -37,10 +37,10 @@ function error_test () {
 }
 
 run_test "
-(lambda ()
+((lambda ()
   (define x 1)
   (define y 2)
-  (+ x y))
+  (+ x y)))
 " 3
 
 error_test "

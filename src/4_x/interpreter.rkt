@@ -579,9 +579,12 @@
           (car vals))))
     "Unbound variables"))
 
-(define (scan-out-defines l-body)
+(define (scan-out-defines init-l-body)
   (define (scan-let-body l-body definitions bodies)
-    (cond ((null? l-body) (definition->let definitions bodies))
+    (cond ((null? l-body) 
+           (if (null? definitions)
+             init-l-body
+             (definition->let definitions bodies)))
           ((definition? (car l-body))
            (scan-let-body (cdr l-body) 
                           (cons (car l-body) definitions)
@@ -589,9 +592,10 @@
           (else (scan-let-body (cdr l-body) 
                                definitions
                                (cons (car l-body) bodies)))))
-  (scan-let-body l-body '() '()))
+  (scan-let-body init-l-body '() '()))
 
 (define (definition->let definitions bodies)
+  (stack-trace "definition->let" definitions bodies)
   (make-let (map (lambda (definition) (list (definition-variable definition) "*unassigned*"))
                  definitions)
             (append (map (lambda (definition)
