@@ -449,7 +449,7 @@
 (define (make-let variables body)
   (if (null? body)
     (error "MAKE_LET")
-    (cons (cons 'let variables) body)))
+    (list 'let variables body)))
 
 (define (let*->nested-lets exp)
   (let ((body (let-body exp))
