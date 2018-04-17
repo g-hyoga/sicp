@@ -602,7 +602,7 @@
             (val-iter (cdr defs)))))
   (make-let (map (lambda (def) (list (definition-variable def) "*unassigned*"))
                  definitions)
-            (val-iter definitions)))
+            (make-begin (val-iter definitions))))
 
 (define (make-assignment variable value)
   (list 'set! variable value))
