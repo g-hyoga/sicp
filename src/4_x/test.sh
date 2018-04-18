@@ -37,6 +37,13 @@ function error_test () {
   rm tmp
 }
 
+error_test "
+((lambda ()
+  (define x (- y 1))
+  (define y 2)
+  (+ x y)))
+"
+
 run_test "
 (define hoge 0)
 (set! hoge 1)

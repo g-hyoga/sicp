@@ -341,6 +341,8 @@
                               the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
+    (define-variable! '*unassigned* 
+                      (lambda () (error "ERROR: unassigned value is used")) initial-env)
     initial-env))
 
 (define (primitive-procedure? proc)
@@ -588,7 +590,7 @@
     (cond ((null? l-body) 
            (if (null? definitions)
              init-l-body
-             (definition->let (reverse definitions) bodies)))
+             (definition->let (reverse definitions) (reverse bodies))))
           ((definition? (car l-body))
            (scan-let-body (cdr l-body) 
                           (cons (car l-body) definitions)
@@ -605,7 +607,7 @@
       (cons (make-assignment (definition-variable (car defs)) (definition-value (car defs)))
             (val-iter (cdr defs)))))
   (list 
-    (make-let (map (lambda (def) (list (definition-variable def) "*unassigned*"))
+    (make-let (map (lambda (def) (list (definition-variable def) '*unassigned*))
                    definitions)
               (make-begin (val-iter definitions)))))
 
