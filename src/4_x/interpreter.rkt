@@ -588,7 +588,7 @@
     (cond ((null? l-body) 
            (if (null? definitions)
              init-l-body
-             (definition->let definitions bodies)))
+             (definition->let (reverse definitions) bodies)))
           ((definition? (car l-body))
            (scan-let-body (cdr l-body) 
                           (cons (car l-body) definitions)
