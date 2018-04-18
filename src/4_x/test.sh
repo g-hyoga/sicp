@@ -38,6 +38,28 @@ function error_test () {
 }
 
 run_test "
+(define hoge 0)
+(set! hoge 1)
+(set! hoge 2)
+hoge
+" 2
+
+run_test "
+(define hoge 0)
+((lambda (x) (set! x 1) (set! x 2)) hoge)
+" $void
+
+run_test "
+((lambda () (+ 1 1) (+ 2 3) (+ 4 5)))
+" 9
+
+run_test "
+(define hoge 0)
+((lambda (x) (set! x 1)) hoge)
+hoge
+" 0
+
+run_test "
 ((lambda ()
   (define x 1)
   (define y 2)

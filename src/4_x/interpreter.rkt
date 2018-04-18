@@ -64,7 +64,7 @@
 ;;;;; 4.1.1 ;;;;;
 
 (define (eval exp env)
-  (stack-trace "EVAL" exp)
+  (stack-trace "EVAL" exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
@@ -72,7 +72,7 @@
         ((definition? exp) (eval-definition exp env))
         ((if? exp) (eval-if exp env))
         ((lambda? exp) (make-procedure (lambda-parameters exp)
-                                       (lambda-body exp)
+                                       (scan-out-defines (lambda-body exp))
                                        env))
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
@@ -287,7 +287,7 @@
 (define (false? x) (eq? x false))
 
 (define (make-procedure parameters body env)
-  (list 'procedure parameters (scan-out-defines body) env))
+  (list 'procedure parameters body env))
 
 (define (compound-procedure? p)
   (tagged-list? p 'procedure))
@@ -535,7 +535,11 @@
         (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
 
 (define (set-variable-value! var val env)
-  (env-loop var env set-car! "Unbound variables: SET!"))
+  (env-loop 
+    var 
+    env 
+    (lambda (vars vals) (set-car! vals val))
+    "Unbound variables: SET!"))
   
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
@@ -600,9 +604,10 @@
       bodies
       (cons (make-assignment (definition-variable (car defs)) (definition-value (car defs)))
             (val-iter (cdr defs)))))
-  (make-let (map (lambda (def) (list (definition-variable def) "*unassigned*"))
-                 definitions)
-            (make-begin (val-iter definitions))))
+  (list 
+    (make-let (map (lambda (def) (list (definition-variable def) "*unassigned*"))
+                   definitions)
+              (make-begin (val-iter definitions)))))
 
 (define (make-assignment variable value)
   (list 'set! variable value))
