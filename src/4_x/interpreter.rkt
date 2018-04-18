@@ -64,7 +64,7 @@
 ;;;;; 4.1.1 ;;;;;
 
 (define (eval exp env)
-  (stack-trace "EVAL" exp)
+  (stack-trace "EVAL" exp env)
   (cond ((self-evaluating? exp) exp)
         ((variable? exp) (lookup-variable-value exp env))
         ((quoted? exp) (text-of-quotation exp))
@@ -72,7 +72,7 @@
         ((definition? exp) (eval-definition exp env))
         ((if? exp) (eval-if exp env))
         ((lambda? exp) (make-procedure (lambda-parameters exp)
-                                       (lambda-body exp)
+                                       (scan-out-defines (lambda-body exp))
                                        env))
         ((begin? exp)
          (eval-sequence (begin-actions exp) env))
@@ -287,7 +287,7 @@
 (define (false? x) (eq? x false))
 
 (define (make-procedure parameters body env)
-  (list 'procedure parameters (scan-out-defines body) env))
+  (list 'procedure parameters body env))
 
 (define (compound-procedure? p)
   (tagged-list? p 'procedure))
@@ -341,6 +341,8 @@
                               the-empty-environment)))
     (define-variable! 'true true initial-env)
     (define-variable! 'false false initial-env)
+    (define-variable! '*unassigned* 
+                      (lambda () (error "ERROR: unassigned value is used")) initial-env)
     initial-env))
 
 (define (primitive-procedure? proc)
@@ -535,7 +537,11 @@
         (else (scan target (cdr vars) (cdr vals) null-proc eq-proc))))
 
 (define (set-variable-value! var val env)
-  (env-loop var env set-car! "Unbound variables: SET!"))
+  (env-loop 
+    var 
+    env 
+    (lambda (vars vals) (set-car! vals val))
+    "Unbound variables: SET!"))
   
 (define (define-variable! var val env)
   (let ((frame (first-frame env)))
@@ -579,9 +585,12 @@
           (car vals))))
     "Unbound variables"))
 
-(define (scan-out-defines l-body)
+(define (scan-out-defines init-l-body)
   (define (scan-let-body l-body definitions bodies)
-    (cond ((null? l-body) (definition->let definitions bodies))
+    (cond ((null? l-body) 
+           (if (null? definitions)
+             init-l-body
+             (definition->let (reverse definitions) (reverse bodies))))
           ((definition? (car l-body))
            (scan-let-body (cdr l-body) 
                           (cons (car l-body) definitions)
@@ -589,15 +598,18 @@
           (else (scan-let-body (cdr l-body) 
                                definitions
                                (cons (car l-body) bodies)))))
-  (scan-let-body l-body '() '()))
+  (scan-let-body init-l-body '() '()))
 
 (define (definition->let definitions bodies)
-  (make-let (map (lambda (definition) (list (definition-variable definition) "*unassigned*"))
-                 definitions)
-            (append (map (lambda (definition)
-                           (make-assignment (definition-variable definition) (definition-value definition)))
-                         definitions)
-                    bodies)))
+  (define (val-iter defs)
+    (if (null? defs)
+      bodies
+      (cons (make-assignment (definition-variable (car defs)) (definition-value (car defs)))
+            (val-iter (cdr defs)))))
+  (list 
+    (make-let (map (lambda (def) (list (definition-variable def) '*unassigned*))
+                   definitions)
+              (make-begin (val-iter definitions)))))
 
 (define (make-assignment variable value)
   (list 'set! variable value))
