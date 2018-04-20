@@ -611,6 +611,8 @@
                    definitions)
               (make-begin (val-iter definitions)))))
 
+;;;;; ex4.17 ;;;;;;
+
 (define (make-assignment variable value)
   (list 'set! variable value))
 
