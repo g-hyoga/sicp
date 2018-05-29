@@ -1,7 +1,5 @@
 #!bin/bash
 
-echo "Passed Test displayed ."
-
 INTERPRETER_DEBUG_MODE=false
 void=$(racket interpreter.rkt "(define void 0)")
 
@@ -21,7 +19,7 @@ function run_test () {
       echo 
     fi
   else 
-    echo -n "."
+    echo "Test Pass"
   fi
 }
 
@@ -34,7 +32,7 @@ function error_test () {
     echo "Error message in this test must include '$2'"
     echo
   else 
-    echo -n "."
+    echo "Test Pass"
   fi
   rm tmp
 }
