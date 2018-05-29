@@ -63,55 +63,11 @@
 
 ;;;;; 4.1.1 ;;;;;
 
-(define (eval exp env)
-  (stack-trace "EVAL" exp env)
-  (cond ((self-evaluating? exp) exp)
-        ((variable? exp) (lookup-variable-value exp env))
-        ((quoted? exp) (text-of-quotation exp))
-        ((assignment? exp) (eval-assignment exp env))
-        ((definition? exp) (eval-definition exp env))
-        ((if? exp) (eval-if exp env))
-        ((lambda? exp) (make-procedure (lambda-parameters exp)
-                                       (scan-out-defines (lambda-body exp))
-                                       env))
-        ((begin? exp)
-         (eval-sequence (begin-actions exp) env))
-        ((cond? exp) (eval (cond->if exp) env))
-        ((let*? exp) (eval (let*->nested-lets exp) env))
-        ((let? exp) (eval (let->combination exp) env))
-        ((and? exp) (eval-and (and-conjuncts exp) env))
-        ((or? exp) (eval-or (or-conjuncts exp) env))
-        ((unbound? exp) (eval-unbound exp env))
-        ((application? exp)
-         (myapply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
-        (else
-          (error "Unknown expression type: eval" exp))))
-
-(define (myapply procedure arguments)
-  (stack-trace "APPLY" procedure arguments)
-  (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
-        ((compound-procedure? procedure)
-         (eval-sequence
-           (procedure-body procedure)
-           (extend-environment
-             (procedure-parameters procedure)
-             arguments
-             (procedure-environment procedure))))
-        (else
-          (error "Unknown procedure type: myapply" procedure))))
-
 (define (list-of-values exps env)
   (if (no-operands? exps)
     '()
     (cons (eval (first-operand exps) env)
           (list-of-values (rest-operands exps) env))))
-
-(define (eval-if exp env)
-  (if (true? (eval (if-predicate exp) env))
-    (eval (if-consequent exp) env)
-    (eval (if-alternative exp) env)))
 
 (define (eval-sequence exps env)
   (cond ((last-exp? exps)
@@ -387,7 +343,9 @@
 (define (driver-loop)
   (prompt-for-input input-prompt)
   (let ((input (read)))
-    (let ((output (eval input the-global-environemt)))
+    (let ((output 
+            (actual-value 
+              input the-global-environemt)))
       (announce-output output-prompt)
       (display output)))
   (driver-loop))
@@ -616,7 +574,75 @@
 (define (make-assignment variable value)
   (list 'set! variable value))
 
-;;;;; eval ;;;;;
+;;;;; 4.2 ;;;;;
+
+(define (eval exp env)
+  (stack-trace "EVAL" exp env)
+  (cond ((self-evaluating? exp) exp)
+        ((variable? exp) (lookup-variable-value exp env))
+        ((quoted? exp) (text-of-quotation exp))
+        ((assignment? exp) (eval-assignment exp env))
+        ((definition? exp) (eval-definition exp env))
+        ((if? exp) (eval-if exp env))
+        ((lambda? exp) (make-procedure (lambda-parameters exp)
+                                       (scan-out-defines (lambda-body exp))
+                                       env))
+        ((begin? exp)
+         (eval-sequence (begin-actions exp) env))
+        ((cond? exp) (eval (cond->if exp) env))
+        ((let*? exp) (eval (let*->nested-lets exp) env))
+        ((let? exp) (eval (let->combination exp) env))
+        ((and? exp) (eval-and (and-conjuncts exp) env))
+        ((or? exp) (eval-or (or-conjuncts exp) env))
+        ((unbound? exp) (eval-unbound exp env))
+        ((application? exp)
+         (myapply (actual-value (operator exp) env)
+                  (operands exp)
+                  env))
+        (else
+          (error "Unknown expression type: eval" exp))))
+
+(define (myapply procedure arguments env)
+  (stack-trace "APPLY" procedure arguments)
+  (cond ((primitive-procedure? procedure)
+         (apply-primitive-procedure 
+           procedure 
+           (list-of-args-values arguments env)))
+        ((compound-procedure? procedure)
+         (eval-sequence
+           (procedure-body procedure)
+           (extend-environment
+             (procedure-parameters procedure)
+             (list-of-args-values arguments env)
+             (procedure-environment procedure))))
+        (else
+          (error "Unknown procedure type: myapply" procedure))))
+
+(define (actual-value exp env)
+  (force-it (eval exp env)))
+
+(define (list-of-args-values exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (actual-value (first-operand exps)
+                        env)
+          (list-of-args-values (rest-operands exps)
+                               env))))
+
+(define (list-of-delayed-args exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (delayed-it (first-operand exps)
+                      env)
+          (list-of-delayed-args (rest-operands exps)
+                                env))))
+
+(define (eval-if exp env)
+  (if (true? (actual-value (if-predicate exp) env))
+    (eval (if-consequent exp) env)
+    (eval (if-alternative exp) env)))
+
+;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
 (define raw-input (vector-ref (current-command-line-arguments) 0))
@@ -634,7 +660,7 @@
 (define (eval-iter)
   (let ((in (read input)))
     (if (not (eof-object? in))
-      (let ((val (eval in the-global-environemt)))
+      (let ((val (actual-value in the-global-environemt)))
         (if (not (eq? 'ok val))
           (begin (display val)
                  (display "\n")
