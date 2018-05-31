@@ -6,6 +6,19 @@
 (define false #f)
 (define apply-in-underlying-scheme apply)
 
+(define (stack-trace command . args)
+  (define (iter args)
+    (if (not (null? args))
+      (begin (display " ")
+             (display (car args))
+             (iter (cdr args)))))
+  (if (equal? (getenv "INTERPRETER_DEBUG_MODE") "true")
+    (begin (display "[")
+           (display command)
+           (display "] ")
+           (iter args)
+           (display "\n"))))
+
 ;;;;; 4.1.1 ;;;;;
 
 (define (eval exp env)
@@ -22,20 +35,24 @@
          (eval-sequence (begin-actions exp) env))
         ((cond? exp) (eval (cond->if exp) env))
         ((application? exp)
-         (myapply (eval (operator exp) env)
-                (list-of-values (operands exp) env)))
+         (myapply (actual-value (operator exp) env)
+                  (operands exp)
+                  env))
         (else
           (error "Unknown expression type: eval" exp))))
 
-(define (myapply procedure arguments)
+(define (myapply procedure arguments env)
+  (stack-trace "APPLY" procedure arguments)
   (cond ((primitive-procedure? procedure)
-         (apply-primitive-procedure procedure arguments))
+         (apply-primitive-procedure 
+           procedure 
+           (list-of-args-values arguments env)))
         ((compound-procedure? procedure)
          (eval-sequence
            (procedure-body procedure)
            (extend-environment
              (procedure-parameters procedure)
-             arguments
+             (list-of-delayed-args arguments env)
              (procedure-environment procedure))))
         (else
           (error "Unknown procedure type: myapply" procedure))))
@@ -47,7 +64,7 @@
           (list-of-values (rest-operands exps) env))))
 
 (define (eval-if exp env)
-  (if (true? (eval (if-predicate exp) env))
+  (if (true? (actual-value (if-predicate exp) env))
     (eval (if-consequent exp) env)
     (eval (if-alternative exp) env)))
 
@@ -356,6 +373,56 @@
                    '<procedure-env>))
     (display object)))
 
+;;;;; 4.2 ;;;;;
+(define (actual-value exp env)
+  (force-it (eval exp env)))
+
+(define (list-of-args-values exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (actual-value (first-operand exps)
+                        env)
+          (list-of-args-values (rest-operands exps)
+                               env))))
+
+(define (list-of-delayed-args exps env)
+  (if (no-operands? exps)
+    '()
+    (cons (delayed-it (first-operand exps)
+                      env)
+          (list-of-delayed-args (rest-operands exps)
+                                env))))
+
+(define (delayed-it exp env)
+  (list 'thunk exp env))
+
+(define (thunk? obj)
+  (tagged-list? obj 'thunk))
+
+(define (thunk-exp thunk) (cadr thunk))
+(define (thunk-env thunk) (caddr thunk))
+
+(define (evaluated-thunk? obj)
+  (tagged-list? obj 'evaluated-thunk))
+
+(define (thunk-value evaluated-thunk)
+  (cadr evaluated-thunk))
+
+(define (force-it obj)
+  (cond ((thunk? obj)
+         (let ((result (actual-value (thunk-exp obj)
+                                     (thunk-env obj))))
+           (set-car! obj 'evaluted-thunk)
+           (set-car! (cdr obj)
+                     result)
+           (set-cdr! (cdr obj)
+                     '())
+           result))
+        ((evaluated-thunk? obj) (thunk-value obj))
+        (else obj)))
+
+
+
 ;;;;; eval ;;;;;
 (define the-global-environemt (setup-environment))
 ;(driver-loop)
@@ -367,7 +434,7 @@
 (define (eval-iter)
   (let ((in (read input)))
     (if (not (eof-object? in))
-      (let ((val (eval in the-global-environemt)))
+      (let ((val (actual-value in the-global-environemt)))
         (if (not (eq? 'ok val))
           (begin
             (display val)
